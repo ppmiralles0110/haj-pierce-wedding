@@ -125,6 +125,39 @@ def config():
     if request.method == "POST":
         for key, value in request.form.items():
             WeddingConfig.set(key, value)
+
+        # Handle image file uploads for config image fields
+        image_fields = {
+            "hero_image_file": "hero_image_url",
+            "dress_code_men_photo_file": "dress_code_men_photo",
+            "dress_code_women_photo_file": "dress_code_women_photo",
+        }
+        for file_field, config_key in image_fields.items():
+            f = request.files.get(file_field)
+            if f and f.filename:
+                try:
+                    if current_app.config.get("BLOB_STORAGE_URL"):
+                        from app.services.storage_service import upload_photo
+                        url = upload_photo(
+                            file_data=f.read(),
+                            original_filename=f.filename,
+                            uploaded_by=session["user_email"],
+                        )
+                    else:
+                        import os
+                        import time
+                        from werkzeug.utils import secure_filename
+                        uploads_dir = os.path.join(current_app.root_path, "static", "uploads")
+                        os.makedirs(uploads_dir, exist_ok=True)
+                        safe_name = secure_filename(f.filename)
+                        unique_name = f"{int(time.time())}_{safe_name}"
+                        f.save(os.path.join(uploads_dir, unique_name))
+                        url = f"/static/uploads/{unique_name}"
+                    WeddingConfig.set(config_key, url)
+                except Exception as exc:
+                    logger.error("Config image upload failed for %s: %s", config_key, exc)
+                    flash(f"Image upload failed: {exc}", "error")
+
         flash("Configuration updated successfully.", "success")
         return redirect(url_for("admin.config"))
 

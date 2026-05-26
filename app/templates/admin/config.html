@@ -13,7 +13,7 @@
     Edit wedding details below. Changes take effect immediately across the entire website.
   </p>
 
-  <form method="POST" action="{{ url_for('admin.config') }}">
+  <form method="POST" action="{{ url_for('admin.config') }}" enctype="multipart/form-data">
 
     <!-- ── Couple ── -->
     <fieldset class="config-fieldset">
@@ -128,9 +128,15 @@
           </div>
         </div>
         <div class="config-row">
-          <label class="config-key" for="cfg-hero_image_url">Hero Image URL</label>
-          <input class="form-input" type="text" id="cfg-hero_image_url" name="hero_image_url"
-                 value="{{ cfg.get('hero_image_url', '') }}" placeholder="https://... or /static/uploads/..." />
+          <label class="config-key" for="cfg-hero_image_url">Hero Image</label>
+          <input class="form-input" type="file" id="cfg-hero_image_url" name="hero_image_file"
+                 accept="image/*" />
+          <input type="hidden" name="hero_image_url" value="{{ cfg.get('hero_image_url', '') }}" />
+          {% if cfg.get('hero_image_url') %}
+          <small style="color:var(--color-text-secondary);font-size:12px;margin-top:4px;display:block;">
+            Current: <a href="{{ cfg.get('hero_image_url') }}" target="_blank" style="color:var(--color-primary);">view image</a>
+          </small>
+          {% endif %}
         </div>
       </div>
     </fieldset>
@@ -140,22 +146,35 @@
       <legend class="config-legend">Dress Code Photos</legend>
       <div class="config-grid">
         <div class="config-row">
-          <label class="config-key" for="cfg-dress_code_men_photo">For Him — Photo URL</label>
-          <input class="form-input" type="text" id="cfg-dress_code_men_photo" name="dress_code_men_photo"
-                 value="{{ cfg.get('dress_code_men_photo', '') }}"
-                 placeholder="https://picsum.photos/seed/menattire/400/560" />
+          <label class="config-key" for="cfg-dress_code_men_photo">For Him — Photo</label>
+          <input class="form-input" type="file" id="cfg-dress_code_men_photo" name="dress_code_men_photo_file"
+                 accept="image/*" />
+          <input type="hidden" name="dress_code_men_photo" value="{{ cfg.get('dress_code_men_photo', '') }}" />
+          {% if cfg.get('dress_code_men_photo') %}
           <small style="color:var(--color-text-secondary);font-size:12px;margin-top:4px;display:block;">
-            Link to a photo of men's attire example. Leave blank to use default placeholder.
+            Current: <a href="{{ cfg.get('dress_code_men_photo') }}" target="_blank" style="color:var(--color-primary);">view image</a>
           </small>
+          {% else %}
+          <small style="color:var(--color-text-secondary);font-size:12px;margin-top:4px;display:block;">
+            Leave blank to use default placeholder.
+          </small>
+          {% endif %}
         </div>
         <div class="config-row">
-          <label class="config-key" for="cfg-dress_code_women_photo">For Her — Photo URL</label>
-          <input class="form-input" type="text" id="cfg-dress_code_women_photo" name="dress_code_women_photo"
-                 value="{{ cfg.get('dress_code_women_photo', '') }}"
-                 placeholder="https://picsum.photos/seed/womenattire/400/560" />
+          <label class="config-key" for="cfg-dress_code_women_photo">For Her — Photo</label>
+          <input class="form-input" type="file" id="cfg-dress_code_women_photo" name="dress_code_women_photo_file"
+                 accept="image/*" />
+          <input type="hidden" name="dress_code_women_photo" value="{{ cfg.get('dress_code_women_photo', '') }}" />
+          {% if cfg.get('dress_code_women_photo') %}
           <small style="color:var(--color-text-secondary);font-size:12px;margin-top:4px;display:block;">
-            Link to a photo of women's attire example. Leave blank to use default placeholder.
+            Current: <a href="{{ cfg.get('dress_code_women_photo') }}" target="_blank" style="color:var(--color-primary);">view image</a>
           </small>
+          {% else %}
+          <small style="color:var(--color-text-secondary);font-size:12px;margin-top:4px;display:block;">
+            Leave blank to use default placeholder.
+          </small>
+          {% endif %}
+        </div>
         </div>
       </div>
     </fieldset>
