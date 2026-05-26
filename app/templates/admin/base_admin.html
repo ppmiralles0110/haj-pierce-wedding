@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<!--
+  admin/base_admin.html — Admin layout template
+  Dark editorial admin panel — extends nothing (standalone admin layout)
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Admin{% endblock %} — Wedding Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}" />
+  <style>
+    :root {
+      --color-primary:   {{ theme.color_primary }};
+      --color-secondary: {{ theme.color_secondary }};
+    }
+  </style>
+</head>
+<body class="admin-body">
+
+<!-- ===== ADMIN SIDEBAR ===== -->
+<aside class="admin-sidebar" role="navigation" aria-label="Admin navigation">
+  <div class="admin-sidebar-header">
+    <p class="admin-sidebar-label">Admin Panel</p>
+    <h2 class="admin-sidebar-title">
+      {{ wedding_config.get('couple_name_1', 'Pierce') }}
+      &amp;
+      {{ wedding_config.get('couple_name_2', '') }}
+    </h2>
+  </div>
+  <nav>
+    <ul class="admin-nav">
+      <li><a href="{{ url_for('admin.dashboard') }}" class="admin-nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">Dashboard</a></li>
+      <li><a href="{{ url_for('admin.guests') }}" class="admin-nav-link {% if request.endpoint == 'admin.guests' %}active{% endif %}">Guests</a></li>
+      <li><a href="{{ url_for('admin.photos') }}" class="admin-nav-link {% if request.endpoint == 'admin.photos' %}active{% endif %}">Photos</a></li>
+      <li><a href="{{ url_for('admin.guestbook') }}" class="admin-nav-link {% if request.endpoint == 'admin.guestbook' %}active{% endif %}">Guestbook</a></li>
+      <li><a href="{{ url_for('admin.config') }}" class="admin-nav-link {% if request.endpoint == 'admin.config' %}active{% endif %}">Config</a></li>
+      <li class="admin-nav-divider"></li>
+      <li><a href="{{ url_for('main.home') }}" class="admin-nav-link">View Site</a></li>
+      <li><a href="{{ url_for('auth.logout') }}" class="admin-nav-link">Logout</a></li>
+    </ul>
+  </nav>
+</aside>
+
+<!-- ===== ADMIN MAIN ===== -->
+<div class="admin-main">
+  <div class="admin-topbar">
+    <h1 class="admin-page-title">{% block page_title %}{% endblock %}</h1>
+    <p class="admin-user">{{ current_user_email }}</p>
+  </div>
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="admin-flash-container">
+        {% for category, message in messages %}
+          <div class="flash flash--{{ category }}">
+            {{ message }}
+            <button onclick="this.parentElement.remove()" aria-label="Dismiss">&times;</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="admin-content">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+</body>
+</html>

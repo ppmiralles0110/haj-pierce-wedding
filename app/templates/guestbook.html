@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Guestbook — {{ wedding_config.get('couple_name_1', 'Pierce') }} &amp; {{ wedding_config.get('couple_name_2', '') }}{% endblock %}
+
+{% block content %}
+<!-- ===== PAGE HERO ===== -->
+<header class="page-hero" aria-label="Guestbook header">
+  <div class="page-hero-content animate-on-scroll">
+    <p class="eyebrow">Leave a Wish</p>
+    <h1 class="page-hero-title">Guestbook</h1>
+  </div>
+</header>
+
+<div class="section container">
+  <div class="guestbook-layout">
+
+    <!-- ===== NEW MESSAGE FORM ===== -->
+    <aside class="guestbook-form-col">
+      <form class="guestbook-form animate-on-scroll" id="guestbook-form"
+            method="POST" action="{{ url_for('main.guestbook') }}">
+
+        <input type="hidden" name="ai_enhanced" id="ai_enhanced_flag" value="false" />
+
+        <p class="eyebrow">Your Message</p>
+        <h2 class="form-section-title">Sign the Guestbook</h2>
+
+        <div class="form-group">
+          <label class="form-label eyebrow" for="gb-name">Your Name</label>
+          <input class="form-input" type="text" id="gb-name" name="name"
+                 placeholder="Full name" required maxlength="255"
+                 autocomplete="name" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label eyebrow" for="gb-message">Message</label>
+          <textarea class="form-input form-textarea" id="gb-message" name="message"
+                    rows="5" placeholder="Share your wishes for the happy couple…"
+                    required maxlength="1000"></textarea>
+        </div>
+
+        <!-- AI Enhanced preview -->
+        <div id="ai-preview" class="ai-preview" hidden>
+          <p class="eyebrow">✨ AI-Enhanced Version</p>
+          <p class="ai-preview-text" id="ai-preview-text"></p>
+          <div class="ai-preview-actions">
+            <button type="button" class="btn btn--primary btn--small" id="accept-ai">
+              Use This Version
+            </button>
+            <button type="button" class="btn btn--ghost btn--small" id="reject-ai">
+              Keep Original
+            </button>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn--ghost" id="enhance-btn">
+            ✨ Enhance with AI
+          </button>
+          <button type="submit" class="btn btn--primary">
+            Post Message &rarr;
+          </button>
+        </div>
+
+      </form>
+    </aside>
+
+    <!-- ===== MESSAGE LIST ===== -->
+    <section class="guestbook-messages-col" aria-label="Guestbook messages">
+      {% if messages %}
+        {% for msg in messages %}
+        <article class="guestbook-card animate-on-scroll">
+          <div class="guestbook-card-header">
+            <div class="guestbook-avatar" aria-hidden="true">
+              {{ msg.guest_name[0] | upper }}
+            </div>
+            <div>
+              <p class="guestbook-author">{{ msg.guest_name }}</p>
+              <p class="guestbook-date">{{ msg.created_at.strftime('%B %d, %Y') }}</p>
+            </div>
+            {% if msg.ai_enhanced %}
+            <span class="ai-badge" title="AI-enhanced message">✨</span>
+            {% endif %}
+          </div>
+          <p class="guestbook-message">{{ msg.message }}</p>
+        </article>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state text-center animate-on-scroll">
+          <p class="eyebrow">Be the First</p>
+          <h3 class="section-title" style="font-size:2rem;">No messages yet</h3>
+          <p class="section-body">Be the first to sign the guestbook!</p>
+        </div>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ===== Guestbook AI Enhancer =====
+const enhanceBtn     = document.getElementById('enhance-btn');
+const aiPreview      = document.getElementById('ai-preview');
+const aiPreviewText  = document.getElementById('ai-preview-text');
+const acceptAiBtn    = document.getElementById('accept-ai');
+const rejectAiBtn    = document.getElementById('reject-ai');
+const messageInput   = document.getElementById('gb-message');
+const aiFlag         = document.getElementById('ai_enhanced_flag');
+
+enhanceBtn.addEventListener('click', async () => {
+  const original = messageInput.value.trim();
+  if (!original) {
+    alert('Please write a message first.');
+    return;
+  }
+  enhanceBtn.textContent = 'Enhancing…';
+  enhanceBtn.disabled = true;
+
+  try {
+    const resp = await fetch('/api/enhance-message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: original }),
+    });
+    const data = await resp.json();
+    if (data.enhanced) {
+      aiPreviewText.textContent = data.enhanced;
+      aiPreview.hidden = false;
+      // Store original text for rejection
+      messageInput.dataset.original = original;
+    } else {
+      alert('AI enhancement failed. Please try again.');
+    }
+  } catch {
+    alert('Could not reach the AI service. Please try again.');
+  } finally {
+    enhanceBtn.textContent = '✨ Enhance with AI';
+    enhanceBtn.disabled = false;
+  }
+});
+
+acceptAiBtn.addEventListener('click', () => {
+  messageInput.value = aiPreviewText.textContent;
+  aiFlag.value = 'true';
+  aiPreview.hidden = true;
+});
+
+rejectAiBtn.addEventListener('click', () => {
+  messageInput.value = messageInput.dataset.original || messageInput.value;
+  aiFlag.value = 'false';
+  aiPreview.hidden = true;
+});
+</script>
+{% endblock %}

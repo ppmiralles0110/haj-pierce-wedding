@@ -1,0 +1,66 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Guests{% endblock %}
+{% block page_title %}Guest List{% endblock %}
+
+{% block content %}
+
+<!-- Filter tabs -->
+<div class="admin-section">
+  <div class="filter-tabs">
+    <a href="{{ url_for('admin.guests') }}"
+       class="filter-tab {% if not status_filter %}active{% endif %}">All</a>
+    <a href="{{ url_for('admin.guests', status='attending') }}"
+       class="filter-tab {% if status_filter == 'attending' %}active{% endif %}">Attending</a>
+    <a href="{{ url_for('admin.guests', status='not_attending') }}"
+       class="filter-tab {% if status_filter == 'not_attending' %}active{% endif %}">Declined</a>
+    <a href="{{ url_for('admin.guests', status='pending') }}"
+       class="filter-tab {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
+    <a href="{{ url_for('admin.export_guests') }}" class="admin-btn admin-btn--small">
+      Export CSV
+    </a>
+  </div>
+</div>
+
+<!-- Guest table -->
+<div class="admin-section">
+  <div class="table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Meal</th>
+          <th>+1</th>
+          <th>Table</th>
+          <th>RSVP At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for g in guests %}
+        <tr>
+          <td>{{ g.name or '—' }}</td>
+          <td>{{ g.email }}</td>
+          <td>
+            <span class="status-badge status-badge--{{ g.rsvp_status }}">
+              {{ g.rsvp_status | replace('_', ' ') | title }}
+            </span>
+          </td>
+          <td>{{ g.meal_preference | title if g.meal_preference else '—' }}</td>
+          <td>
+            {% if g.plus_one %}
+              Yes{% if g.plus_one_name %} ({{ g.plus_one_name }}){% endif %}
+            {% else %}No{% endif %}
+          </td>
+          <td>{{ g.table_number or '—' }}</td>
+          <td>{{ g.rsvp_submitted_at.strftime('%b %d %H:%M') if g.rsvp_submitted_at else '—' }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="text-align:center;color:#666;">No guests found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

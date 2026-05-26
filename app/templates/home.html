@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Home — {{ wedding_config.get('couple_name_1', 'Pierce') }} &amp; {{ wedding_config.get('couple_name_2', '') }}{% endblock %}
+
+{% block content %}
+
+<!-- ===== HERO SECTION (100vh full-bleed) ===== -->
+<section class="hero" id="hero" aria-label="Hero">
+  <!-- Background image with Ken Burns animation -->
+  <div class="hero-bg"
+       style="background-image: url('{{ wedding_config.get('hero_image_url', '/static/images/placeholder.jpg') }}');"
+       role="img" aria-label="Wedding couple photograph"></div>
+  <!-- Dark overlay -->
+  <div class="hero-overlay"></div>
+
+  <!-- Content positioned bottom-left -->
+  <div class="hero-content">
+    <p class="eyebrow">
+      {{ wedding_config.get('wedding_date', '') }}
+    </p>
+    <h1 class="hero-title">
+      {{ wedding_config.get('couple_name_1', 'Pierce') }}<br />
+      <span class="hero-title-amp">&amp;</span><br />
+      {{ wedding_config.get('couple_name_2', '') }}
+    </h1>
+    <div class="hero-divider" aria-hidden="true"></div>
+    <p class="hero-subtitle">{{ wedding_config.get('custom_message', 'We can\'t wait to celebrate with you!') }}</p>
+    <div class="hero-ctas">
+      <a href="{{ url_for('rsvp.rsvp') }}" class="btn btn--primary">RSVP Now &rarr;</a>
+      <a href="{{ url_for('main.details') }}" class="btn btn--ghost">View Details &rarr;</a>
+    </div>
+  </div>
+
+  <!-- Slide number indicator -->
+  <div class="hero-slide-indicator" aria-hidden="true">
+    <span class="hero-slide-num">01</span>
+    <span class="hero-slide-line"></span>
+  </div>
+
+  <!-- Scroll hint -->
+  <div class="hero-scroll-hint" aria-hidden="true">
+    <span>SCROLL</span>
+    <div class="hero-scroll-line"></div>
+  </div>
+</section>
+<!-- ===== END HERO ===== -->
+
+
+<!-- ===== FEATURE STRIP ===== -->
+<section class="feature-strip animate-on-scroll" aria-label="Key details">
+  <div class="feature-strip-inner">
+
+    <!-- Venue column -->
+    <div class="feature-col">
+      <p class="eyebrow">The Venue</p>
+      <h3 class="feature-heading">{{ wedding_config.get('venue_name', 'Venue TBD') }}</h3>
+      <p class="feature-text">{{ wedding_config.get('venue_address', '') }}</p>
+      <a href="{{ url_for('main.details') }}" class="feature-link">View Details &rarr;</a>
+    </div>
+
+    <div class="feature-divider" aria-hidden="true"></div>
+
+    <!-- Dress code column -->
+    <div class="feature-col">
+      <p class="eyebrow">Dress Code</p>
+      <h3 class="feature-heading">{{ wedding_config.get('dress_code', 'TBD') }}</h3>
+      <p class="feature-text">{{ wedding_config.get('theme_description', '') }}</p>
+      <a href="{{ url_for('main.details') }}" class="feature-link">View Details &rarr;</a>
+    </div>
+
+    <div class="feature-divider" aria-hidden="true"></div>
+
+    <!-- Program column -->
+    <div class="feature-col">
+      <p class="eyebrow">The Program</p>
+      <h3 class="feature-heading">{{ wedding_config.get('wedding_time', '') }}</h3>
+      <p class="feature-text">Ceremony &bull; Cocktails &bull; Reception &bull; Dancing</p>
+      <a href="{{ url_for('main.details') }}" class="feature-link">View Program &rarr;</a>
+    </div>
+
+  </div>
+</section>
+<!-- ===== END FEATURE STRIP ===== -->
+
+
+<!-- ===== GALLERY PREVIEW ===== -->
+{% if preview_photos %}
+<section class="section gallery-preview" aria-label="Photo gallery preview">
+  <div class="container">
+    <div class="section-header animate-on-scroll">
+      <p class="eyebrow">Captured Moments</p>
+      <h2 class="section-title">Our Story</h2>
+    </div>
+    <div class="gallery-grid gallery-grid--4">
+      {% for photo in preview_photos %}
+      <article class="gallery-card animate-on-scroll">
+        <div class="gallery-card-img-wrap">
+          <img src="{{ photo.blob_url }}"
+               alt="{{ photo.caption or 'Wedding photo ' ~ loop.index }}"
+               loading="lazy"
+               class="gallery-card-img" />
+          <div class="gallery-card-overlay">
+            <span class="gallery-card-num">0{{ loop.index }}</span>
+            {% if photo.caption %}
+              <p class="gallery-card-caption">{{ photo.caption }}</p>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    <div class="section-cta animate-on-scroll">
+      <a href="{{ url_for('main.gallery') }}" class="btn btn--ghost">View Full Gallery &rarr;</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+<!-- ===== END GALLERY PREVIEW ===== -->
+
+
+<!-- ===== CINEMATIC CTA SECTION ===== -->
+<section class="cta-section" aria-label="RSVP call to action"
+         style="background-image: url('{{ wedding_config.get('hero_image_url', '/static/images/placeholder.jpg') }}');">
+  <div class="cta-overlay"></div>
+  <div class="cta-content animate-on-scroll">
+    <p class="eyebrow">Join Us</p>
+    <h2 class="cta-title">Forever<br />Starts Here</h2>
+    <div class="cta-divider" aria-hidden="true"></div>
+
+    <!-- Countdown timer -->
+    <div class="countdown" id="countdown"
+         data-date="{{ wedding_config.get('wedding_date', '') }}"
+         aria-label="Countdown to wedding day">
+      <div class="countdown-unit">
+        <span class="countdown-num" id="cd-days">--</span>
+        <span class="countdown-label">Days</span>
+      </div>
+      <div class="countdown-unit">
+        <span class="countdown-num" id="cd-hours">--</span>
+        <span class="countdown-label">Hours</span>
+      </div>
+      <div class="countdown-unit">
+        <span class="countdown-num" id="cd-minutes">--</span>
+        <span class="countdown-label">Minutes</span>
+      </div>
+      <div class="countdown-unit">
+        <span class="countdown-num" id="cd-seconds">--</span>
+        <span class="countdown-label">Seconds</span>
+      </div>
+    </div>
+
+    <a href="{{ url_for('rsvp.rsvp') }}" class="btn btn--primary btn--large">
+      RSVP Now &rarr;
+    </a>
+  </div>
+</section>
+<!-- ===== END CINEMATIC CTA ===== -->
+
+
+<!-- ===== GUESTBOOK TEASER ===== -->
+<section class="section guestbook-teaser animate-on-scroll" aria-label="Guestbook">
+  <div class="container container--narrow text-center">
+    <p class="eyebrow">Leave a Wish</p>
+    <h2 class="section-title">Guestbook</h2>
+    <p class="section-body">
+      Share your love, laughter, and well wishes for the happy couple.
+    </p>
+    <a href="{{ url_for('main.guestbook') }}" class="btn btn--primary">Sign the Guestbook &rarr;</a>
+  </div>
+</section>
+<!-- ===== END GUESTBOOK TEASER ===== -->
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/gallery.js') }}" defer></script>
+{% endblock %}

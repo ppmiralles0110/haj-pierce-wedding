@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Verify Code — {{ wedding_config.get('couple_name_1', 'Pierce') }} &amp; {{ wedding_config.get('couple_name_2', '') }}{% endblock %}
+
+{% block content %}
+<section class="auth-section" aria-label="Verify OTP">
+  <div class="auth-card animate-on-scroll">
+
+    <div class="auth-brand">
+      <p class="eyebrow">Check Your Email</p>
+      <h1 class="auth-title">Enter Your Code</h1>
+      <div class="auth-divider" aria-hidden="true"></div>
+      <p class="auth-subtitle">
+        We sent a 6-digit code to
+        <strong class="auth-email">{{ email }}</strong>.
+        It expires in 10 minutes.
+      </p>
+    </div>
+
+    <form class="auth-form" method="POST" action="{{ url_for('auth.verify') }}" novalidate>
+      <div class="form-group">
+        <label class="form-label eyebrow" for="otp">Verification Code</label>
+        <input
+          class="form-input form-input--otp"
+          type="text"
+          id="otp"
+          name="otp"
+          placeholder="000000"
+          required
+          maxlength="6"
+          minlength="6"
+          inputmode="numeric"
+          pattern="[0-9]{6}"
+          autocomplete="one-time-code"
+          autofocus
+        />
+      </div>
+      <div class="form-group">
+        <button type="submit" class="btn btn--primary btn--full">
+          Verify &amp; Log In &rarr;
+        </button>
+      </div>
+      <p class="auth-note">
+        Didn't receive it?
+        <a href="{{ url_for('auth.login') }}" class="auth-link">Request a new code</a>.
+      </p>
+    </form>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Auto-format OTP input: numbers only, auto-submit at 6 digits
+  const otpInput = document.getElementById('otp');
+  otpInput.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+    if (e.target.value.length === 6) {
+      e.target.closest('form').submit();
+    }
+  });
+</script>
+{% endblock %}

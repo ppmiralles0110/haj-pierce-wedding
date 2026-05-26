@@ -1,0 +1,30 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Config{% endblock %}
+{% block page_title %}Wedding Config{% endblock %}
+
+{% block content %}
+<div class="admin-section">
+  <p style="color:#b0b0b0;margin-bottom:24px;">
+    Edit any wedding configuration value below. Changes take effect immediately.
+  </p>
+  <form method="POST" action="{{ url_for('admin.config') }}">
+    <div class="config-grid">
+      {% for row in config_rows %}
+      <div class="config-row">
+        <label class="config-key" for="cfg-{{ row.key }}">{{ row.key }}</label>
+        <input
+          class="form-input"
+          type="text"
+          id="cfg-{{ row.key }}"
+          name="{{ row.key }}"
+          value="{{ row.value }}"
+        />
+      </div>
+      {% endfor %}
+    </div>
+    <div style="margin-top:32px;">
+      <button type="submit" class="admin-btn">Save All Changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

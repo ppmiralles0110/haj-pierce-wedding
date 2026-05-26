@@ -1,0 +1,63 @@
+# =============================================================================
+# .github/workflows/ci.yml — Continuous Integration
+# Runs on every push and on PRs targeting main
+# =============================================================================
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    name: Lint & Test (Python 3.12)
+    runs-on: ubuntu-latest
+
+    env:
+      FLASK_ENV: testing
+      FLASK_CONFIG: testing
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint with flake8
+        run: |
+          # Stop on syntax errors or undefined names; warn on style issues
+          flake8 app/ scripts/ tests/ wsgi.py \
+            --count \
+            --select=E9,F63,F7,F82 \
+            --show-source \
+            --statistics
+          # Full style check (warnings only — do not fail CI)
+          flake8 app/ scripts/ tests/ wsgi.py \
+            --count \
+            --max-line-length=120 \
+            --statistics \
+            --exit-zero
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ \
+            --cov=app \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            -v
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage.xml

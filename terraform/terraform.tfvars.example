@@ -1,0 +1,29 @@
+# =============================================================================
+# terraform/terraform.tfvars.example
+# Copy this to terraform.tfvars (NEVER commit terraform.tfvars to git)
+# =============================================================================
+
+environment  = "prod"
+location     = "southeastasia"
+ai_location  = "swedencentral"
+project_name = "wedding"
+owner_name   = "pierce"   # EDIT THIS
+
+# App Service Plan SKU: B2 (~$25/month), P1v3 (~$70/month)
+app_service_sku_name = "B2"
+
+# PostgreSQL
+postgresql_sku_name   = "B_Standard_B1ms"
+postgresql_storage_mb = 32768
+
+db_username = "weddingadmin"
+db_password = "REPLACE_WITH_STRONG_PASSWORD"  # EDIT THIS — min 8 chars, upper+lower+number+special
+db_name     = "wedding_db"
+
+# Optional custom domain — set to null to skip Front Door custom domain setup
+custom_domain = null
+# custom_domain = "haj-and-pierce.wedding"   # EDIT THIS if you have a domain
+
+# Sensitive values — store securely
+admin_emails     = "your@email.com,partner@email.com"  # EDIT THIS
+sendgrid_api_key = "SG.XXXXXXXXXXXXXXXXXXXX"             # EDIT THIS

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<!--
+  base.html — Root Jinja2 layout template
+  All pages extend this template using Jinja2 block inheritance.
+  Dark cinematic UI — wedding editorial aesthetic.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="{{ wedding_config.get('couple_name_1', 'Pierce') }} &amp; {{ wedding_config.get('couple_name_2', '') }} Wedding" />
+  <title>{% block title %}{{ wedding_config.get('couple_name_1', 'Pierce') }} &amp; {{ wedding_config.get('couple_name_2', '') }} — Wedding{% endblock %}</title>
+
+  <!-- Google Fonts: Cormorant Garamond, Montserrat, Lato -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Montserrat:wght@300;400;500;600;700;800;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+
+  <!-- Theme CSS (CSS vars injected from DB) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}" />
+  <!-- Main application styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+
+  {% block extra_css %}{% endblock %}
+
+  <!-- Inline CSS vars driven by DB theme settings -->
+  <style>
+    :root {
+      --color-primary:    {{ theme.color_primary }};
+      --color-secondary:  {{ theme.color_secondary }};
+      --color-accent:     {{ theme.color_accent }};
+      --font-heading:     '{{ theme.font_heading }}', serif;
+      --font-subheading:  '{{ theme.font_subheading }}', sans-serif;
+      --font-body:        '{{ theme.font_body }}', sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== NAVIGATION ===== -->
+  <nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
+    <div class="nav-container">
+
+      <!-- Logo / Couple Names -->
+      <a class="nav-logo" href="{{ url_for('main.home') }}" aria-label="Home">
+        {{ wedding_config.get('couple_name_1', 'Pierce') }}
+        <span class="nav-logo-amp">&amp;</span>
+        {{ wedding_config.get('couple_name_2', '') }}
+      </a>
+
+      <!-- Desktop navigation links -->
+      <ul class="nav-links" id="nav-links">
+        {% if is_authenticated %}
+          <li><a href="{{ url_for('main.home') }}" class="nav-link">Home</a></li>
+          <li><a href="{{ url_for('main.details') }}" class="nav-link">Details</a></li>
+          <li><a href="{{ url_for('rsvp.rsvp') }}" class="nav-link">RSVP</a></li>
+          <li><a href="{{ url_for('main.gallery') }}" class="nav-link">Gallery</a></li>
+          <li><a href="{{ url_for('main.guestbook') }}" class="nav-link">Guestbook</a></li>
+          {% if is_admin %}
+            <li><a href="{{ url_for('admin.dashboard') }}" class="nav-link nav-link--admin">Admin</a></li>
+          {% endif %}
+          <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
+        {% else %}
+          <li><a href="{{ url_for('auth.login') }}" class="nav-link">Login</a></li>
+        {% endif %}
+      </ul>
+
+      <!-- Mobile hamburger button -->
+      <button class="nav-hamburger" id="nav-hamburger"
+              aria-expanded="false" aria-controls="nav-links"
+              aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+  <!-- ===== END NAVIGATION ===== -->
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container" role="alert">
+        {% for category, message in messages %}
+          <div class="flash flash--{{ category }}">
+            <span>{{ message }}</span>
+            <button class="flash-close" onclick="this.parentElement.remove()" aria-label="Dismiss">&times;</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+  <!-- ===== END MAIN CONTENT ===== -->
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer" role="contentinfo">
+    <div class="footer-inner">
+      <p class="footer-names">
+        {{ wedding_config.get('couple_name_1', 'Pierce') }}
+        &amp;
+        {{ wedding_config.get('couple_name_2', '') }}
+      </p>
+      <p class="footer-date">{{ wedding_config.get('wedding_date', '') }}</p>
+      {% if wedding_config.get('wedding_hashtag') %}
+        <p class="footer-hashtag">{{ wedding_config.get('wedding_hashtag') }}</p>
+      {% endif %}
+    </div>
+  </footer>
+  <!-- ===== END FOOTER ===== -->
+
+  <!-- ===== AI CHAT FAB (Floating Action Button) ===== -->
+  {% if is_authenticated %}
+  <div id="chat-widget" class="chat-widget" aria-label="AI Wedding Concierge">
+    <!-- FAB trigger button -->
+    <button class="chat-fab" id="chat-fab" aria-expanded="false" aria-controls="chat-panel"
+            title="Chat with our AI Concierge">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    </button>
+    <!-- Chat panel -->
+    <div class="chat-panel" id="chat-panel" aria-hidden="true">
+      <div class="chat-header">
+        <div>
+          <p class="chat-header-label">AI Concierge</p>
+          <p class="chat-header-title">Wedding Assistant</p>
+        </div>
+        <button class="chat-close" id="chat-close" aria-label="Close chat">&times;</button>
+      </div>
+      <div class="chat-messages" id="chat-messages" role="log" aria-live="polite">
+        <div class="chat-message chat-message--bot">
+          <p>Hello! 👋 I'm your wedding concierge. Ask me anything about the venue, schedule, dress code, or anything else about the big day!</p>
+        </div>
+      </div>
+      <form class="chat-input-form" id="chat-input-form" autocomplete="off">
+        <input type="text" class="chat-input" id="chat-input"
+               placeholder="Ask a question..." maxlength="500"
+               aria-label="Chat message input" />
+        <button type="submit" class="chat-send" aria-label="Send message">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+  <!-- ===== END CHAT FAB ===== -->
+
+  <!-- JavaScript -->
+  <script src="{{ url_for('static', filename='js/scroll-animations.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/countdown.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
+  <script>
+    // Navbar scroll behaviour
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('navbar--scrolled', window.scrollY > 60);
+    }, { passive: true });
+
+    // Mobile hamburger toggle
+    const hamburger = document.getElementById('nav-hamburger');
+    const navLinks  = document.getElementById('nav-links');
+    hamburger.addEventListener('click', () => {
+      const expanded = hamburger.getAttribute('aria-expanded') === 'true';
+      hamburger.setAttribute('aria-expanded', String(!expanded));
+      navLinks.classList.toggle('nav-links--open');
+    });
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

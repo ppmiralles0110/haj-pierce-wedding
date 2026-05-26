@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Wedding Details — {{ wedding_config.get('couple_name_1', 'Pierce') }} &amp; {{ wedding_config.get('couple_name_2', '') }}{% endblock %}
+
+{% block content %}
+
+<!-- ===== PAGE HERO ===== -->
+<header class="page-hero" aria-label="Page header">
+  <div class="page-hero-content animate-on-scroll">
+    <p class="eyebrow">Everything You Need to Know</p>
+    <h1 class="page-hero-title">Wedding Details</h1>
+  </div>
+</header>
+
+<!-- ===== DETAILS CONTENT ===== -->
+<div class="section container">
+
+  <!-- Date & Time -->
+  <article class="details-card animate-on-scroll">
+    <div class="details-card-icon" aria-hidden="true">📅</div>
+    <div class="details-card-body">
+      <p class="eyebrow">Date &amp; Time</p>
+      <h2 class="details-card-title">{{ wedding_config.get('wedding_date', 'TBD') }}</h2>
+      <p class="details-card-text">{{ wedding_config.get('wedding_time', 'TBD') }}</p>
+    </div>
+  </article>
+
+  <!-- Venue -->
+  <article class="details-card animate-on-scroll">
+    <div class="details-card-icon" aria-hidden="true">📍</div>
+    <div class="details-card-body">
+      <p class="eyebrow">The Venue</p>
+      <h2 class="details-card-title">{{ wedding_config.get('venue_name', 'TBD') }}</h2>
+      <p class="details-card-text">{{ wedding_config.get('venue_address', '') }}</p>
+      {% if wedding_config.get('venue_google_maps_url') and wedding_config.get('venue_google_maps_url') != '#' %}
+        <a href="{{ wedding_config.get('venue_google_maps_url') }}"
+           class="btn btn--ghost btn--small" target="_blank" rel="noopener noreferrer">
+          View on Google Maps &rarr;
+        </a>
+      {% endif %}
+    </div>
+  </article>
+
+  <!-- Dress Code -->
+  <article class="details-card animate-on-scroll">
+    <div class="details-card-icon" aria-hidden="true">👗</div>
+    <div class="details-card-body">
+      <p class="eyebrow">Dress Code</p>
+      <h2 class="details-card-title">{{ wedding_config.get('dress_code', 'TBD') }}</h2>
+      <p class="details-card-text">{{ wedding_config.get('theme_description', '') }}</p>
+    </div>
+  </article>
+
+  <!-- Program -->
+  <article class="details-card animate-on-scroll">
+    <div class="details-card-icon" aria-hidden="true">🎵</div>
+    <div class="details-card-body">
+      <p class="eyebrow">The Program</p>
+      <h2 class="details-card-title">Program of Events</h2>
+      <ul class="program-list">
+        <li class="program-item">
+          <span class="program-time">{{ wedding_config.get('wedding_time', '') }}</span>
+          <span class="program-event">Ceremony Begins</span>
+        </li>
+        <li class="program-item">
+          <span class="program-time">After Ceremony</span>
+          <span class="program-event">Cocktail Hour</span>
+        </li>
+        <li class="program-item">
+          <span class="program-time">Evening</span>
+          <span class="program-event">Dinner Reception</span>
+        </li>
+        <li class="program-item">
+          <span class="program-time">Late Evening</span>
+          <span class="program-event">Dancing &amp; Celebrations</span>
+        </li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- RSVP Deadline -->
+  <article class="details-card animate-on-scroll">
+    <div class="details-card-icon" aria-hidden="true">💌</div>
+    <div class="details-card-body">
+      <p class="eyebrow">RSVP Deadline</p>
+      <h2 class="details-card-title">{{ wedding_config.get('rsvp_deadline', 'TBD') }}</h2>
+      <p class="details-card-text">
+        Please let us know if you'll be joining us by the deadline above.
+      </p>
+      <a href="{{ url_for('rsvp.rsvp') }}" class="btn btn--primary">RSVP Now &rarr;</a>
+    </div>
+  </article>
+
+</div>
+<!-- ===== END DETAILS CONTENT ===== -->
+
+{% endblock %}

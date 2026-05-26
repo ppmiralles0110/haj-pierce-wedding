@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Gallery — {{ wedding_config.get('couple_name_1', 'Pierce') }} &amp; {{ wedding_config.get('couple_name_2', '') }}{% endblock %}
+
+{% block content %}
+<!-- ===== PAGE HERO ===== -->
+<header class="page-hero" aria-label="Gallery header">
+  <div class="page-hero-content animate-on-scroll">
+    <p class="eyebrow">Captured Moments</p>
+    <h1 class="page-hero-title">Gallery</h1>
+  </div>
+</header>
+
+<!-- ===== PHOTO GRID ===== -->
+<section class="section" aria-label="Photo gallery">
+  <div class="container">
+    {% if photos %}
+    <div class="gallery-grid gallery-grid--4" id="gallery-grid">
+      {% for photo in photos %}
+      <article class="gallery-card animate-on-scroll">
+        <div class="gallery-card-img-wrap">
+          <img src="{{ photo.blob_url }}"
+               alt="{{ photo.caption or 'Wedding photo ' ~ loop.index }}"
+               loading="lazy"
+               class="gallery-card-img"
+               data-lightbox="{{ photo.blob_url }}"
+               data-caption="{{ photo.caption or '' }}" />
+          <div class="gallery-card-overlay">
+            <span class="gallery-card-num">{{ '%02d' % loop.index }}</span>
+            {% if photo.caption %}
+              <p class="gallery-card-caption">{{ photo.caption }}</p>
+            {% endif %}
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state animate-on-scroll text-center">
+      <p class="eyebrow">Coming Soon</p>
+      <h2 class="section-title">Photos Coming Soon</h2>
+      <p class="section-body">Our gallery will be filled with beautiful memories soon. Check back after the big day!</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ===== LIGHTBOX ===== -->
+<div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Photo lightbox" hidden>
+  <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
+  <div class="lightbox-content">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Close lightbox">&times;</button>
+    <img src="" alt="" class="lightbox-img" id="lightbox-img" />
+    <p class="lightbox-caption" id="lightbox-caption"></p>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/gallery.js') }}" defer></script>
+{% endblock %}

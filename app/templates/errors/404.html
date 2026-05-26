@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Page Not Found{% endblock %}
+{% block content %}
+<section class="auth-section" aria-label="404 error">
+  <div class="auth-card text-center animate-on-scroll">
+    <p class="eyebrow">404</p>
+    <h1 class="auth-title">Page Not Found</h1>
+    <p style="color:var(--color-text-secondary);margin:16px 0 32px;">
+      The page you're looking for doesn't exist.
+    </p>
+    <a href="{{ url_for('main.home') }}" class="btn btn--primary">Back to Home</a>
+  </div>
+</section>
+{% endblock %}

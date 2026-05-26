@@ -1,0 +1,35 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Guestbook{% endblock %}
+{% block page_title %}Guestbook Messages{% endblock %}
+{% block content %}
+<div class="admin-section">
+  {% if messages %}
+  <div class="table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Message</th>
+          <th>AI?</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in messages %}
+        <tr>
+          <td>{{ m.guest_name }}</td>
+          <td>{{ m.guest_email }}</td>
+          <td style="max-width:300px;">{{ m.message }}</td>
+          <td>{{ '✨' if m.ai_enhanced else '' }}</td>
+          <td>{{ m.created_at.strftime('%b %d, %Y') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p style="color:#666;">No guestbook messages yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- ===== STATS GRID ===== -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <p class="stat-label">Total Guests</p>
+    <p class="stat-value">{{ stats.total_guests }}</p>
+  </div>
+  <div class="stat-card stat-card--attending">
+    <p class="stat-label">Attending</p>
+    <p class="stat-value">{{ stats.attending }}</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-label">Declined</p>
+    <p class="stat-value">{{ stats.not_attending }}</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-label">Pending</p>
+    <p class="stat-value">{{ stats.pending }}</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-label">Plus Ones</p>
+    <p class="stat-value">{{ stats.plus_ones }}</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-label">Photos</p>
+    <p class="stat-value">{{ stats.total_photos }}</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-label">Guestbook</p>
+    <p class="stat-value">{{ stats.guestbook_count }}</p>
+  </div>
+  <div class="stat-card">
+    <p class="stat-label">Chat Logs</p>
+    <p class="stat-value">{{ stats.chat_logs }}</p>
+  </div>
+</div>
+
+<!-- ===== MEAL BREAKDOWN ===== -->
+<div class="admin-section">
+  <h2 class="admin-section-title">Meal Preferences (Attending Guests)</h2>
+  <div class="stats-grid">
+    <div class="stat-card"><p class="stat-label">Chicken</p><p class="stat-value">{{ stats.meal_chicken }}</p></div>
+    <div class="stat-card"><p class="stat-label">Fish</p><p class="stat-value">{{ stats.meal_fish }}</p></div>
+    <div class="stat-card"><p class="stat-label">Vegetarian</p><p class="stat-value">{{ stats.meal_vegetarian }}</p></div>
+    <div class="stat-card"><p class="stat-label">Vegan</p><p class="stat-value">{{ stats.meal_vegan }}</p></div>
+  </div>
+</div>
+
+<!-- ===== QUICK ACTIONS ===== -->
+<div class="admin-section">
+  <h2 class="admin-section-title">Quick Actions</h2>
+  <div class="quick-actions">
+    <a href="{{ url_for('admin.guests') }}" class="admin-btn">View Guest List</a>
+    <a href="{{ url_for('admin.export_guests') }}" class="admin-btn">Export CSV</a>
+    <a href="{{ url_for('admin.photos') }}" class="admin-btn">Manage Photos</a>
+    <a href="{{ url_for('admin.config') }}" class="admin-btn">Edit Config</a>
+  </div>
+</div>
+
+{% endblock %}

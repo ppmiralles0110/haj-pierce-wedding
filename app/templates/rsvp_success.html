@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}RSVP Confirmed — {{ wedding_config.get('couple_name_1', 'Pierce') }} &amp; {{ wedding_config.get('couple_name_2', '') }}{% endblock %}
+
+{% block content %}
+<section class="section" aria-label="RSVP confirmation">
+  <div class="container container--narrow text-center">
+
+    <div class="success-icon animate-on-scroll" aria-hidden="true">
+      {% if guest.rsvp_status == 'attending' %}💍{% else %}💌{% endif %}
+    </div>
+
+    <p class="eyebrow animate-on-scroll">
+      {% if guest.rsvp_status == 'attending' %}See You There!{% else %}We'll Miss You{% endif %}
+    </p>
+
+    <h1 class="section-title animate-on-scroll">
+      {% if guest.rsvp_status == 'attending' %}
+        You're Confirmed!
+      {% else %}
+        RSVP Received
+      {% endif %}
+    </h1>
+
+    {% if ai_message %}
+    <div class="ai-message-card animate-on-scroll">
+      <p class="eyebrow">A personal note from us</p>
+      <p class="ai-message-text">{{ ai_message }}</p>
+    </div>
+    {% endif %}
+
+    {% if guest.rsvp_status == 'attending' %}
+    <div class="rsvp-summary animate-on-scroll">
+      <div class="summary-row">
+        <span class="summary-label">Date</span>
+        <span class="summary-value">{{ wedding_config.get('wedding_date', 'TBD') }}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Venue</span>
+        <span class="summary-value">{{ wedding_config.get('venue_name', 'TBD') }}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Dress Code</span>
+        <span class="summary-value">{{ wedding_config.get('dress_code', 'TBD') }}</span>
+      </div>
+      {% if guest.plus_one and guest.plus_one_name %}
+      <div class="summary-row">
+        <span class="summary-label">+1</span>
+        <span class="summary-value">{{ guest.plus_one_name }}</span>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="rsvp-success-actions animate-on-scroll">
+      <a href="{{ url_for('main.home') }}" class="btn btn--ghost">Back to Home</a>
+      <a href="{{ url_for('main.details') }}" class="btn btn--primary">View Details &rarr;</a>
+    </div>
+
+    {% if wedding_config.get('wedding_hashtag') %}
+    <p class="hashtag-callout animate-on-scroll">
+      Don't forget to share your moments using
+      <strong>{{ wedding_config.get('wedding_hashtag') }}</strong>
+    </p>
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

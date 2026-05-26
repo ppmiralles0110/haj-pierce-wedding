@@ -1,0 +1,50 @@
+# =============================================================================
+# docker-compose.yml — Local development environment
+# Usage: docker compose up --build
+# =============================================================================
+services:
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: weddingadmin
+      POSTGRES_PASSWORD: localdevpassword  # Local dev only — never use in production
+      POSTGRES_DB: wedding_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U weddingadmin -d wedding_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://weddingadmin:localdevpassword@db:5432/wedding_db
+      - SECRET_KEY=dev-secret-key-not-for-production
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT:-}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY:-}
+      - AZURE_OPENAI_DEPLOYMENT=${AZURE_OPENAI_DEPLOYMENT:-gpt-4o-mini}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY:-}
+      - BLOB_STORAGE_URL=${BLOB_STORAGE_URL:-}
+      - BLOB_CONTAINER_NAME=${BLOB_CONTAINER_NAME:-photos}
+      - ADMIN_EMAILS=${ADMIN_EMAILS:-admin@example.com}
+      - APPINSIGHTS_INSTRUMENTATIONKEY=${APPINSIGHTS_INSTRUMENTATIONKEY:-}
+    volumes:
+      - .:/app  # Hot-reload in dev (remove in production)
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "flask db upgrade && gunicorn --bind 0.0.0.0:8000 --reload --workers 1 wsgi:application"
+
+volumes:
+  postgres_data:

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}RSVP Closed{% endblock %}
+{% block content %}
+<section class="auth-section" aria-label="RSVP closed">
+  <div class="auth-card text-center animate-on-scroll">
+    <p class="eyebrow">RSVP Closed</p>
+    <h1 class="auth-title">RSVP is Now Closed</h1>
+    <p style="color:var(--color-text-secondary);margin:16px 0 32px;">
+      The RSVP window has passed. If you need to make changes,
+      please contact us directly.
+    </p>
+    <a href="{{ url_for('main.details') }}" class="btn btn--ghost">View Details</a>
+  </div>
+</section>
+{% endblock %}
