@@ -25,6 +25,6 @@ migrate = Migrate()
 # Flask-Limiter — IP-based rate limiting (storage configured via Config)
 limiter = Limiter(
     key_func=get_remote_address,    # Rate-limit by client IP address
-    default_limits=["200 per day", "50 per hour"],
+    default_limits=["2000 per day", "500 per hour"],
     storage_uri="memory://",        # Overridden by RATELIMIT_STORAGE_URI in config
 )

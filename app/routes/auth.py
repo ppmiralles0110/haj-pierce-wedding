@@ -122,7 +122,7 @@ def _invalidate_previous_otps(email: str) -> None:
 # ---------------------------------------------------------------------------
 
 @auth_bp.route("/login", methods=["GET", "POST"])
-@limiter.limit("5 per 10 minutes")
+@limiter.limit("50 per 10 minutes")
 def login():
     """
     Step 1 of OTP login: collect email address and send OTP.
@@ -213,7 +213,7 @@ def login():
 
 
 @auth_bp.route("/verify", methods=["GET", "POST"])
-@limiter.limit("10 per 10 minutes")
+@limiter.limit("50 per 10 minutes")
 def verify():
     """
     Step 2 of OTP login: validate the submitted code.

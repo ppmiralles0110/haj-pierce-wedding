@@ -113,7 +113,8 @@ class Config:
     RATELIMIT_STORAGE_URI: str = os.environ.get(
         "RATELIMIT_STORAGE_URI", "memory://"
     )
-    RATELIMIT_DEFAULT: str = "200 per day;50 per hour"
+    RATELIMIT_DEFAULT: str = "2000 per day;500 per hour"
+    RATELIMIT_ENABLED: bool = os.environ.get("RATELIMIT_ENABLED", "true").lower() != "false"
 
 
 class TestConfig(Config):
