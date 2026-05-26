@@ -61,6 +61,17 @@ DEFAULT_CONFIG: dict[str, str] = {
     "hero_image_url":  "/static/images/placeholder.jpg",   # EDIT after uploading hero photo
     "custom_message":  "We can't wait to celebrate with you!",
     "wedding_hashtag": "#PierceAndHaj",
+
+    # ---- Dress Code Photos ----
+    "dress_code_men_photo":   "",                           # URL to men's attire photo
+    "dress_code_women_photo": "",                           # URL to women's attire photo
+
+    # ---- Program of Events (time + label, up to 5 rows) ----
+    "program_1_time":  "",  "program_1_label": "Ceremony Begins",
+    "program_2_time":  "",  "program_2_label": "Cocktail Hour",
+    "program_3_time":  "",  "program_3_label": "Dinner Reception",
+    "program_4_time":  "",  "program_4_label": "Dancing & Celebrations",
+    "program_5_time":  "",  "program_5_label": "",
 }
 
 

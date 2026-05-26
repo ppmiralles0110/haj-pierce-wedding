@@ -127,6 +127,57 @@
       </div>
     </fieldset>
 
+    <!-- ── Dress Code Photos ── -->
+    <fieldset class="config-fieldset">
+      <legend class="config-legend">Dress Code Photos</legend>
+      <div class="config-grid">
+        <div class="config-row">
+          <label class="config-key" for="cfg-dress_code_men_photo">For Him — Photo URL</label>
+          <input class="form-input" type="text" id="cfg-dress_code_men_photo" name="dress_code_men_photo"
+                 value="{{ cfg.get('dress_code_men_photo', '') }}"
+                 placeholder="https://picsum.photos/seed/menattire/400/560" />
+          <small style="color:var(--color-text-secondary);font-size:12px;margin-top:4px;display:block;">
+            Link to a photo of men's attire example. Leave blank to use default placeholder.
+          </small>
+        </div>
+        <div class="config-row">
+          <label class="config-key" for="cfg-dress_code_women_photo">For Her — Photo URL</label>
+          <input class="form-input" type="text" id="cfg-dress_code_women_photo" name="dress_code_women_photo"
+                 value="{{ cfg.get('dress_code_women_photo', '') }}"
+                 placeholder="https://picsum.photos/seed/womenattire/400/560" />
+          <small style="color:var(--color-text-secondary);font-size:12px;margin-top:4px;display:block;">
+            Link to a photo of women's attire example. Leave blank to use default placeholder.
+          </small>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- ── Program of Events ── -->
+    <fieldset class="config-fieldset">
+      <legend class="config-legend">Program of Events</legend>
+      <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:16px;">
+        Up to 5 events. Leave a row blank to hide it on the Details page.
+      </p>
+      <div class="config-grid">
+        {% for i in range(1, 6) %}
+        <div class="config-row" style="display:grid;grid-template-columns:160px 1fr;gap:12px;align-items:start;">
+          <div>
+            <label class="config-key" for="cfg-program_{{ i }}_time">Event {{ i }} — Time</label>
+            <input class="form-input" type="text" id="cfg-program_{{ i }}_time" name="program_{{ i }}_time"
+                   value="{{ cfg.get('program_' ~ i ~ '_time', '') }}"
+                   placeholder="e.g. 3:00 PM" />
+          </div>
+          <div>
+            <label class="config-key" for="cfg-program_{{ i }}_label">Event {{ i }} — Label</label>
+            <input class="form-input" type="text" id="cfg-program_{{ i }}_label" name="program_{{ i }}_label"
+                   value="{{ cfg.get('program_' ~ i ~ '_label', '') }}"
+                   placeholder="e.g. Ceremony Begins" />
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </fieldset>
+
     <!-- ── Save ── -->
     <div style="margin-top:32px;">
       <button type="submit" class="admin-btn">Save All Changes</button>

@@ -80,7 +80,7 @@ h1, h2, h3, h4 { font-family: var(--font-heading); color: var(--color-text-prima
   font-family: var(--font-heading);
   font-size: 1.4rem;
   font-weight: 400;
-  color: #ffffff; /* white by default — sits on hero image */
+  color: var(--color-text-primary); /* dark on light pages */
   letter-spacing: 1px;
   transition: color var(--transition-fast);
 }
@@ -93,14 +93,22 @@ h1, h2, h3, h4 { font-family: var(--font-heading); color: var(--color-text-prima
   font-weight: 500;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.85); /* white by default — sits on hero image */
+  color: var(--color-text-secondary); /* dark on light pages */
   transition: color var(--transition-fast);
 }
-.nav-link:hover, .nav-link.active { color: #ffffff; }
-.nav-link--admin { color: rgba(255,180,180,0.9); }
+.nav-link:hover, .nav-link.active { color: var(--color-primary); }
+.nav-link--admin { color: var(--color-accent); }
 
 .nav-hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
-.nav-hamburger span { display: block; width: 24px; height: 1px; background: #ffffff; transition: var(--transition-fast); } /* white on hero */
+.nav-hamburger span { display: block; width: 24px; height: 1px; background: var(--color-text-primary); transition: var(--transition-fast); }
+
+/* ===== HOME HERO PAGE: white nav text when transparent (over dark hero image) ===== */
+body.has-hero .navbar:not(.navbar--scrolled) .nav-logo { color: #ffffff; }
+body.has-hero .navbar:not(.navbar--scrolled) .nav-link { color: rgba(255,255,255,0.85); }
+body.has-hero .navbar:not(.navbar--scrolled) .nav-link:hover,
+body.has-hero .navbar:not(.navbar--scrolled) .nav-link.active { color: #ffffff; }
+body.has-hero .navbar:not(.navbar--scrolled) .nav-link--admin { color: rgba(255,180,180,0.9); }
+body.has-hero .navbar:not(.navbar--scrolled) .nav-hamburger span { background: #ffffff; }
 
 /* ===== FLASH MESSAGES ===== */
 .flash-container { position: fixed; top: 80px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; max-width: 400px; }
@@ -298,6 +306,42 @@ h1, h2, h3, h4 { font-family: var(--font-heading); color: var(--color-text-prima
 .program-item { display: flex; gap: var(--space-lg); padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.07); }
 .program-time { font-family: var(--font-subheading); font-size: 11px; letter-spacing: 1px; color: var(--color-primary); min-width: 140px; padding-top: 2px; }
 .program-event { color: var(--color-text-primary); font-size: 15px; }
+
+/* ===== DRESS CODE PHOTOS ===== */
+.details-card--wide .details-card-body { width: 100%; }
+.dress-code-photos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+  margin-top: var(--space-lg);
+  max-width: 520px;
+}
+.dress-code-photo-card { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); }
+.dress-code-photo-wrap {
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.09);
+}
+.dress-code-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  transition: transform 0.4s ease;
+}
+.dress-code-photo-wrap:hover .dress-code-photo { transform: scale(1.04); }
+.dress-code-photo-label {
+  font-family: var(--font-subheading);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  text-align: center;
+}
 
 /* ===== RSVP FORM ===== */
 .rsvp-form { background: var(--color-bg-card); border: 1px solid rgba(0,0,0,0.09); border-radius: var(--radius-md); padding: var(--space-xl) 48px; }

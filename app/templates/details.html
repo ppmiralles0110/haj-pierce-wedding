@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Wedding Details — {{ wedding_config.get('couple_name_1', 'Pierce') }} &amp; {{ wedding_config.get('couple_name_2', 'Haj') }} Wedding{% endblock %}
+{% block title %}Wedding Details — {{ wedding_config.get('couple_name_1', 'Pierce') }} and {{ wedding_config.get('couple_name_2', 'Haj') }} Wedding{% endblock %}
 
 {% block content %}
 
@@ -74,12 +74,38 @@
   </article>
 
   <!-- Dress Code -->
-  <article class="details-card animate-on-scroll">
+  <article class="details-card details-card--wide animate-on-scroll">
     <div class="details-card-icon" aria-hidden="true">👗</div>
     <div class="details-card-body">
       <p class="eyebrow">Dress Code</p>
       <h2 class="details-card-title">{{ wedding_config.get('dress_code', 'TBD') }}</h2>
       <p class="details-card-text">{{ wedding_config.get('theme_description', '') }}</p>
+      <div class="dress-code-photos">
+        <div class="dress-code-photo-card">
+          <div class="dress-code-photo-wrap">
+            <img
+              src="{{ wedding_config.get('dress_code_men_photo', 'https://picsum.photos/seed/menattire/400/560') }}"
+              alt="Men's attire example"
+              class="dress-code-photo"
+              loading="lazy"
+              onerror="this.src='https://picsum.photos/seed/menattire/400/560'"
+            />
+          </div>
+          <p class="dress-code-photo-label">For Him</p>
+        </div>
+        <div class="dress-code-photo-card">
+          <div class="dress-code-photo-wrap">
+            <img
+              src="{{ wedding_config.get('dress_code_women_photo', 'https://picsum.photos/seed/womenattire/400/560') }}"
+              alt="Women's attire example"
+              class="dress-code-photo"
+              loading="lazy"
+              onerror="this.src='https://picsum.photos/seed/womenattire/400/560'"
+            />
+          </div>
+          <p class="dress-code-photo-label">For Her</p>
+        </div>
+      </div>
     </div>
   </article>
 
@@ -90,22 +116,16 @@
       <p class="eyebrow">The Program</p>
       <h2 class="details-card-title">Program of Events</h2>
       <ul class="program-list">
-        <li class="program-item">
-          <span class="program-time">{{ wedding_config.get('wedding_time', '') }}</span>
-          <span class="program-event">Ceremony Begins</span>
-        </li>
-        <li class="program-item">
-          <span class="program-time">After Ceremony</span>
-          <span class="program-event">Cocktail Hour</span>
-        </li>
-        <li class="program-item">
-          <span class="program-time">Evening</span>
-          <span class="program-event">Dinner Reception</span>
-        </li>
-        <li class="program-item">
-          <span class="program-time">Late Evening</span>
-          <span class="program-event">Dancing &amp; Celebrations</span>
-        </li>
+        {% for i in range(1, 6) %}
+          {% set t = wedding_config.get('program_' ~ i ~ '_time', '') %}
+          {% set label = wedding_config.get('program_' ~ i ~ '_label', '') %}
+          {% if t or label %}
+          <li class="program-item">
+            <span class="program-time">{{ t }}</span>
+            <span class="program-event">{{ label }}</span>
+          </li>
+          {% endif %}
+        {% endfor %}
       </ul>
     </div>
   </article>
