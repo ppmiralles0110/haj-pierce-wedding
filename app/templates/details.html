@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Wedding Details — {{ wedding_config.get('couple_name_1', 'Pierce') }} &amp; {{ wedding_config.get('couple_name_2', '') }}{% endblock %}
+{% block title %}Wedding Details — {{ wedding_config.get('couple_name_1', 'Pierce') }} &amp; {{ wedding_config.get('couple_name_2', 'Haj') }} Wedding{% endblock %}
 
 {% block content %}
 
@@ -31,11 +31,44 @@
       <p class="eyebrow">The Venue</p>
       <h2 class="details-card-title">{{ wedding_config.get('venue_name', 'TBD') }}</h2>
       <p class="details-card-text">{{ wedding_config.get('venue_address', '') }}</p>
-      {% if wedding_config.get('venue_google_maps_url') and wedding_config.get('venue_google_maps_url') != '#' %}
-        <a href="{{ wedding_config.get('venue_google_maps_url') }}"
-           class="btn btn--ghost btn--small" target="_blank" rel="noopener noreferrer">
-          View on Google Maps &rarr;
-        </a>
+
+      {% set venue_name    = wedding_config.get('venue_name', '') %}
+      {% set venue_address = wedding_config.get('venue_address', '') %}
+      {% set maps_url      = wedding_config.get('venue_google_maps_url', '#') %}
+      {% set query         = (venue_name ~ ' ' ~ venue_address) | urlencode %}
+
+      {% if venue_name or venue_address %}
+      <!-- Embedded map (no API key needed via maps.google.com) -->
+      <div class="venue-map-wrap">
+        <iframe
+          class="venue-map"
+          title="Venue location"
+          loading="lazy"
+          allowfullscreen
+          referrerpolicy="no-referrer-when-downgrade"
+          src="https://maps.google.com/maps?q={{ query }}&output=embed&z=15">
+        </iframe>
+      </div>
+      <!-- Open in Google Maps link -->
+      {% if maps_url and maps_url != '#' %}
+      <a class="venue-map-link" href="{{ maps_url }}"
+         target="_blank" rel="noopener noreferrer">
+        📍 Open in Google Maps &rarr;
+      </a>
+      {% else %}
+      <a class="venue-map-link"
+         href="https://www.google.com/maps/search/?api=1&query={{ query }}"
+         target="_blank" rel="noopener noreferrer">
+        📍 Open in Google Maps &rarr;
+      </a>
+      {% endif %}
+
+      {% else %}
+      <!-- Venue not configured yet — show placeholder -->
+      <div class="venue-map-placeholder">
+        <span class="venue-map-placeholder-icon">🗺️</span>
+        <span>Venue details coming soon</span>
+      </div>
       {% endif %}
     </div>
   </article>
