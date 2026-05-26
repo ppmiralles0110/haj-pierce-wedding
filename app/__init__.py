@@ -77,6 +77,9 @@ def create_app(config_object: Optional[object] = None) -> Flask:
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(api_bp, url_prefix="/api")
 
+    # Import models so Flask-Migrate can detect them
+    from app.models import login_log  # noqa: F401
+
     # ------------------------------------------------------------------
     # 4. Context Processors — inject wedding config & theme vars globally
     # ------------------------------------------------------------------

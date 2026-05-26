@@ -37,6 +37,7 @@
       <li><a href="{{ url_for('admin.guests') }}" class="admin-nav-link {% if request.endpoint == 'admin.guests' %}active{% endif %}">Guests</a></li>
       <li><a href="{{ url_for('admin.photos') }}" class="admin-nav-link {% if request.endpoint == 'admin.photos' %}active{% endif %}">Photos</a></li>
       <li><a href="{{ url_for('admin.guestbook') }}" class="admin-nav-link {% if request.endpoint == 'admin.guestbook' %}active{% endif %}">Guestbook</a></li>
+      <li><a href="{{ url_for('admin.login_logs') }}" class="admin-nav-link {% if request.endpoint == 'admin.login_logs' %}active{% endif %}">Login Logs</a></li>
       <li><a href="{{ url_for('admin.config') }}" class="admin-nav-link {% if request.endpoint == 'admin.config' %}active{% endif %}">Config</a></li>
       <li class="admin-nav-divider"></li>
       <li><a href="{{ url_for('main.home') }}" class="admin-nav-link">View Site</a></li>

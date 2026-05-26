@@ -1,0 +1,33 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Login Logs{% endblock %}
+{% block page_title %}Login Logs{% endblock %}
+{% block content %}
+<div class="admin-section">
+  {% if logs %}
+  <div class="table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Date / Time</th>
+          <th>Email</th>
+          <th>IP Address</th>
+          <th>Location</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td>{{ log.logged_at.strftime('%b %d, %Y %H:%M UTC') }}</td>
+          <td>{{ log.email }}</td>
+          <td>{{ log.ip_address or '—' }}</td>
+          <td>{{ log.location_name or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty-state">No login events recorded yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

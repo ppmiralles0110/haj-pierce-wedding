@@ -6,6 +6,7 @@ RSVP routes: display the form and process submissions.
 """
 
 import logging
+import re
 from datetime import datetime, timezone
 
 from flask import (
@@ -57,6 +58,17 @@ def rsvp():
         if not name:
             flash("Please enter your full name.", "error")
             return render_template("rsvp.html", guest=guest)
+
+        if not email or "@" not in email or "." not in email.split("@")[-1]:
+            flash("Please enter a valid email address.", "error")
+            return render_template("rsvp.html", guest=guest)
+
+        if phone_number and not re.match(r'^(09|\+639)[0-9]{9}$', phone_number):
+            flash("Please enter a valid Philippine mobile number (09XXXXXXXXX or +639XXXXXXXXX).", "error")
+            return render_template("rsvp.html", guest=guest)
+
+        if special_requests and len(special_requests) > 1000:
+            special_requests = special_requests[:1000]
 
         if rsvp_status not in ("attending", "not_attending"):
             flash("Please select whether you will attend.", "error")

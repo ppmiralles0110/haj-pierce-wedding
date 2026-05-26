@@ -7,8 +7,9 @@ All routes except /health require authentication via @login_required.
 """
 
 import logging
+from datetime import datetime
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, Response
 
 from app.routes.auth import login_required
 from app.models.photo import Photo
@@ -55,6 +56,56 @@ def details():
     All content is driven by the wedding_config table.
     """
     return render_template("details.html")
+
+
+@main_bp.route("/details/calendar.ics")
+@login_required
+def download_ics():
+    """Generate and serve an .ics calendar file for the wedding event."""
+    from app.models.wedding_config import WeddingConfig
+    c1      = WeddingConfig.get("couple_name_1", "Pierce")
+    c2      = WeddingConfig.get("couple_name_2", "Haj")
+    w_date  = WeddingConfig.get("wedding_date", "")
+    w_time  = WeddingConfig.get("wedding_time", "15:00")
+    v_name  = WeddingConfig.get("venue_name", "")
+    v_addr  = WeddingConfig.get("venue_address", "")
+
+    # Build datetime strings (YYYYMMDDTHHMMSS)
+    try:
+        dt_start = datetime.strptime(f"{w_date} {w_time}", "%Y-%m-%d %H:%M")
+        dt_end   = dt_start.replace(hour=(dt_start.hour + 5) % 24)
+        dtstart  = dt_start.strftime("%Y%m%dT%H%M%S")
+        dtend    = dt_end.strftime("%Y%m%dT%H%M%S")
+    except (ValueError, AttributeError):
+        dtstart  = dtend = "20261218T150000"
+
+    now_stamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    location  = f"{v_name}, {v_addr}".strip(", ")
+    title     = f"{c1} & {c2} Wedding"
+
+    ics = (
+        "BEGIN:VCALENDAR\r\n"
+        "VERSION:2.0\r\n"
+        "PRODID:-//Pierce & Haj Wedding//EN\r\n"
+        "CALSCALE:GREGORIAN\r\n"
+        "METHOD:PUBLISH\r\n"
+        "BEGIN:VEVENT\r\n"
+        f"DTSTART:{dtstart}\r\n"
+        f"DTEND:{dtend}\r\n"
+        f"DTSTAMP:{now_stamp}\r\n"
+        f"SUMMARY:{title}\r\n"
+        f"LOCATION:{location}\r\n"
+        "DESCRIPTION:Join us for our wedding celebration!\r\n"
+        "STATUS:CONFIRMED\r\n"
+        "END:VEVENT\r\n"
+        "END:VCALENDAR\r\n"
+    )
+
+    return Response(
+        ics,
+        mimetype="text/calendar",
+        headers={"Content-Disposition": "attachment; filename=pierce-haj-wedding.ics"},
+    )
 
 
 @main_bp.route("/gallery")

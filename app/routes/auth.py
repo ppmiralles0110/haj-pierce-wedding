@@ -165,8 +165,13 @@ def login():
             db.session.add(guest)
             db.session.commit()
 
-        # Store email in session for the verify step (not the OTP)
+        # Store email + location in session for the verify step
         session["pending_email"] = email
+        session["login_location"] = {
+            "lat":  request.form.get("geo_lat") or None,
+            "lon":  request.form.get("geo_lon") or None,
+            "name": request.form.get("geo_name") or None,
+        }
 
         # Dev mode: no SendGrid key — show OTP directly on the verify page
         if not current_app.config.get("SENDGRID_API_KEY"):
@@ -272,10 +277,27 @@ def verify():
         session["is_admin"] = pending_email.lower() in admin_emails
         session.permanent = True
 
+        # Save login log with location (passed through session from login step)
+        try:
+            from app.models.login_log import LoginLog
+            login_location = session.pop("login_location", {})
+            log = LoginLog(
+                email=pending_email,
+                ip_address=request.remote_addr,
+                location_name=login_location.get("name"),
+                latitude=login_location.get("lat"),
+                longitude=login_location.get("lon"),
+            )
+            db.session.add(log)
+            db.session.commit()
+        except Exception as exc:
+            logger.warning("Could not save login log: %s", exc)
+
         logger.info(
-            "Successful login for %s (admin=%s)",
+            "Successful login for %s (admin=%s) from %s",
             pending_email,
             session["is_admin"],
+            request.remote_addr,
         )
 
         flash("Welcome! You're now logged in.", "success")

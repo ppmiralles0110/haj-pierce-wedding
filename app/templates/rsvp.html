@@ -51,11 +51,15 @@
 
       <!-- Phone Number -->
       <div class="form-group">
-        <label class="form-label eyebrow" for="phone_number">Phone Number</label>
+        <label class="form-label eyebrow" for="phone_number">Phone Number (PH)</label>
         <input class="form-input" type="tel" id="phone_number" name="phone_number"
                value="{{ guest.phone_number or '' }}"
-               placeholder="+1 (555) 000-0000" maxlength="30"
+               placeholder="09XXXXXXXXX or +639XXXXXXXXX" maxlength="15"
+               pattern="^(09|\+639)[0-9]{9}$"
                autocomplete="tel" />
+        <p class="form-hint" style="font-size:0.8rem;color:var(--color-text-muted);margin-top:4px;">
+          Philippine mobile number only (e.g. 09171234567 or +639171234567)
+        </p>
       </div>
 
       <!-- Attendance -->
@@ -101,7 +105,10 @@
         <textarea class="form-input form-textarea" id="special_requests"
                   name="special_requests" rows="3"
                   placeholder="Allergies, dietary needs, accessibility requirements…"
-                  maxlength="500">{{ guest.special_requests or '' }}</textarea>
+                  maxlength="1000">{{ guest.special_requests or '' }}</textarea>
+        <p class="form-hint" style="font-size:0.8rem;color:var(--color-text-muted);margin-top:4px;text-align:right;">
+          <span id="char-count">{{ (guest.special_requests or '')|length }}</span>/1000
+        </p>
       </div>
 
       <!-- Submit -->
@@ -119,6 +126,7 @@
 
 {% block extra_js %}
 <script>
+  // Attendance → show/hide parking
   const attendanceInputs = document.querySelectorAll('input[name="rsvp_status"]');
   const parkingGroup = document.getElementById('parking-group');
 
@@ -129,5 +137,30 @@
 
   attendanceInputs.forEach(el => el.addEventListener('change', updateConditionalFields));
   updateConditionalFields();
+
+  // Character counter for special requests
+  const textarea = document.getElementById('special_requests');
+  const charCount = document.getElementById('char-count');
+  if (textarea && charCount) {
+    textarea.addEventListener('input', () => {
+      charCount.textContent = textarea.value.length;
+      charCount.style.color = textarea.value.length > 900 ? 'var(--color-primary)' : 'var(--color-text-muted)';
+    });
+  }
+
+  // PH phone validation feedback
+  const phoneInput = document.getElementById('phone_number');
+  if (phoneInput) {
+    phoneInput.addEventListener('blur', () => {
+      const val = phoneInput.value.trim();
+      if (val && !/^(09|\+639)[0-9]{9}$/.test(val)) {
+        phoneInput.setCustomValidity('Please enter a valid Philippine mobile number (09XXXXXXXXX or +639XXXXXXXXX).');
+      } else {
+        phoneInput.setCustomValidity('');
+      }
+      phoneInput.reportValidity();
+    });
+    phoneInput.addEventListener('input', () => phoneInput.setCustomValidity(''));
+  }
 </script>
 {% endblock %}

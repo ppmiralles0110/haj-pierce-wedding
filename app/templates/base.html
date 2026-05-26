@@ -100,8 +100,8 @@
     <div class="footer-inner">
       <p class="footer-names">
         {{ wedding_config.get('couple_name_1', 'Pierce') }}
-        &amp;
-        {{ wedding_config.get('couple_name_2', '') }}
+        <span style="color:var(--color-primary);">&amp;</span>
+        {{ wedding_config.get('couple_name_2', '') }} Wedding
       </p>
       <p class="footer-date">{{ wedding_config.get('wedding_date', '') }}</p>
       {% if wedding_config.get('wedding_hashtag') %}

@@ -21,6 +21,48 @@
       <p class="eyebrow">Date &amp; Time</p>
       <h2 class="details-card-title">{{ wedding_config.get('wedding_date', 'TBD') }}</h2>
       <p class="details-card-text">{{ wedding_config.get('wedding_time', 'TBD') }}</p>
+
+      {# Build calendar links from config values #}
+      {% set w_date = wedding_config.get('wedding_date', '') %}
+      {% set w_time = wedding_config.get('wedding_time', '') %}
+      {% set v_name = wedding_config.get('venue_name', '') %}
+      {% set v_addr = wedding_config.get('venue_address', '') %}
+      {% set c1     = wedding_config.get('couple_name_1', 'Pierce') %}
+      {% set c2     = wedding_config.get('couple_name_2', 'Haj') %}
+      {% set event_title = (c1 ~ ' & ' ~ c2 ~ ' Wedding') | urlencode %}
+      {% set event_loc   = (v_name ~ ', ' ~ v_addr) | urlencode %}
+
+      {% if w_date %}
+      {# Convert YYYY-MM-DD + HH:MM to Google/Outlook formats #}
+      {% set date_compact = w_date | replace('-', '') %}
+      {% set time_compact = (w_time ~ ':00') | replace(':', '') if w_time else '150000' %}
+      {# Assume 5-hour event #}
+      {% set hour_start = (w_time.split(':')[0] | int) if w_time else 15 %}
+      {% set hour_end = '%02d' % ((hour_start + 5) % 24) %}
+      {% set dt_start  = date_compact ~ 'T' ~ time_compact %}
+      {% set dt_end    = date_compact ~ 'T' ~ hour_end ~ time_compact[2:] %}
+
+      <div class="add-to-calendar">
+        <p class="eyebrow" style="margin-bottom:10px;margin-top:16px;">Add to Calendar</p>
+        <div class="calendar-btns">
+          <a class="btn-calendar btn-calendar--google"
+             href="https://calendar.google.com/calendar/render?action=TEMPLATE&text={{ event_title }}&dates={{ dt_start }}/{{ dt_end }}&location={{ event_loc }}&details=Join+us+for+our+wedding+celebration%21"
+             target="_blank" rel="noopener noreferrer">
+            🗓 Google Calendar
+          </a>
+          <a class="btn-calendar btn-calendar--apple"
+             href="{{ url_for('main.download_ics') }}"
+             download="pierce-haj-wedding.ics">
+            🍎 Apple / iCal
+          </a>
+          <a class="btn-calendar btn-calendar--outlook"
+             href="https://outlook.live.com/calendar/0/deeplink/compose?subject={{ event_title }}&startdt={{ w_date }}T{{ w_time ~ ':00' if w_time else '15:00:00' }}&enddt={{ w_date }}T{{ hour_end ~ ':00:00' }}&location={{ event_loc }}"
+             target="_blank" rel="noopener noreferrer">
+            📧 Outlook
+          </a>
+        </div>
+      </div>
+      {% endif %}
     </div>
   </article>
 

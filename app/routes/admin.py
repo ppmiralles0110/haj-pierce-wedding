@@ -26,6 +26,7 @@ from app.extensions import db
 from app.models.ai_chat_log import AiChatLog
 from app.models.guest import Guest
 from app.models.guestbook_message import GuestbookMessage
+from app.models.login_log import LoginLog
 from app.models.photo import Photo
 from app.models.wedding_config import WeddingConfig
 from app.routes.auth import admin_required
@@ -227,3 +228,13 @@ def guestbook():
         GuestbookMessage.created_at.desc()
     ).all()
     return render_template("admin/guestbook.html", messages=messages)
+
+
+@admin_bp.route("/login-logs")
+@admin_required
+def login_logs():
+    """
+    View recent login logs with location data.
+    """
+    logs = LoginLog.query.order_by(LoginLog.logged_at.desc()).limit(200).all()
+    return render_template("admin/login_logs.html", logs=logs)
