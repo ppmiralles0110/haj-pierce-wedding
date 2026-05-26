@@ -29,7 +29,7 @@ sendgrid==6.11.0
 # Monitoring
 opencensus==0.11.4
 opencensus-ext-azure==1.1.13
-opencensus-ext-flask==0.8.2
+# opencensus-ext-flask==0.8.2 removed — incompatible with Flask 3.x
 
 # Utilities
 python-dotenv==1.0.1

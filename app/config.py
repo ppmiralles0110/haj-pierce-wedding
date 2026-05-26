@@ -35,7 +35,7 @@ class Config:
     # ------------------------------------------------------------------
     # Flask core
     # ------------------------------------------------------------------
-    SECRET_KEY: str = os.environ.get("FLASK_SECRET_KEY", "dev-insecure-change-me")
+    SECRET_KEY: str = os.environ.get("SECRET_KEY", "dev-insecure-change-me")
     DEBUG: bool = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
     TESTING: bool = False
 
