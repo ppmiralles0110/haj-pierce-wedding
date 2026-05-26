@@ -53,18 +53,40 @@
 
 {% block extra_js %}
 <script>
-  // Request geolocation silently; fill hidden fields before form submit
-  if (navigator.geolocation) {
+(function () {
+  const form = document.getElementById('login-form');
+  let geoReady = false;
+
+  function submitForm() {
+    // Remove our interceptor before submitting
+    form.removeEventListener('submit', onSubmit);
+    form.submit();
+  }
+
+  function onSubmit(e) {
+    if (geoReady) return;  // already resolved — let it go
+    e.preventDefault();
+
+    // Give geolocation / Nominatim up to 6 s to respond
+    const deadline = setTimeout(submitForm, 6000);
+
+    if (!navigator.geolocation) {
+      clearTimeout(deadline);
+      submitForm();
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
         document.getElementById('geo_lat').value = lat;
         document.getElementById('geo_lon').value = lon;
-        // Reverse geocode via OpenStreetMap Nominatim (no API key needed)
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`, {
-          headers: { 'Accept-Language': 'en' }
-        })
+
+        fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`,
+          { headers: { 'Accept-Language': 'en' } }
+        )
         .then(r => r.json())
         .then(data => {
           const addr = data.address || {};
@@ -72,11 +94,24 @@
             .filter(Boolean);
           document.getElementById('geo_name').value = parts.join(', ');
         })
-        .catch(() => {});  // silently ignore if reverse geocode fails
+        .catch(() => {})
+        .finally(() => {
+          clearTimeout(deadline);
+          geoReady = true;
+          submitForm();
+        });
       },
-      () => {},  // silently ignore if user denies permission
+      () => {
+        // Permission denied or unavailable
+        clearTimeout(deadline);
+        geoReady = true;
+        submitForm();
+      },
       { timeout: 5000 }
     );
   }
+
+  form.addEventListener('submit', onSubmit);
+})();
 </script>
 {% endblock %}

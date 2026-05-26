@@ -267,6 +267,9 @@ def verify():
         token.used = True
         db.session.commit()
 
+        # Read location before session.clear() wipes it
+        login_location = session.get("login_location") or {}
+
         # Establish authenticated session
         session.clear()  # Regenerate to prevent session fixation
         admin_emails = [
@@ -280,13 +283,17 @@ def verify():
         # Save login log with location (passed through session from login step)
         try:
             from app.models.login_log import LoginLog
-            login_location = session.pop("login_location", {})
+            def _to_float(v):
+                try:
+                    return float(v) if v is not None else None
+                except (ValueError, TypeError):
+                    return None
             log = LoginLog(
                 email=pending_email,
                 ip_address=request.remote_addr,
                 location_name=login_location.get("name"),
-                latitude=login_location.get("lat"),
-                longitude=login_location.get("lon"),
+                latitude=_to_float(login_location.get("lat")),
+                longitude=_to_float(login_location.get("lon")),
             )
             db.session.add(log)
             db.session.commit()
