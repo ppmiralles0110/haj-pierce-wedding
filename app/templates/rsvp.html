@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}RSVP — {{ wedding_config.get('couple_name_1', 'Pierce') }} &amp; {{ wedding_config.get('couple_name_2', '') }}{% endblock %}
+{% block title %}RSVP — {{ wedding_config.get('couple_name_1', 'Pierce') }} &amp; {{ wedding_config.get('couple_name_2', 'Haj') }}{% endblock %}
 
 {% block content %}
 
@@ -11,6 +11,126 @@
     <p class="page-hero-subtitle">We'd love to have you celebrate with us.</p>
   </div>
 </header>
+
+<!-- ===== RSVP FORM ===== -->
+<section class="section" aria-label="RSVP form">
+  <div class="container container--narrow">
+
+    {% if guest and guest.rsvp_status != 'pending' %}
+    <div class="alert alert--info animate-on-scroll">
+      <p>You've already submitted your RSVP
+        (<strong>{{ guest.rsvp_status | replace('_', ' ') | title }}</strong>).
+        You can update it below.
+      </p>
+    </div>
+    {% endif %}
+
+    <form class="rsvp-form animate-on-scroll" method="POST" action="{{ url_for('rsvp.rsvp') }}"
+          novalidate>
+
+      <!-- Full Name -->
+      <div class="form-group">
+        <label class="form-label eyebrow" for="name">Full Name *</label>
+        <input class="form-input" type="text" id="name" name="name"
+               value="{{ guest.name or '' }}"
+               placeholder="Your full name" required maxlength="255"
+               autocomplete="name" />
+      </div>
+
+      <!-- Email (pre-filled, editable for confirmation) -->
+      <div class="form-group">
+        <label class="form-label eyebrow" for="email">Email Address *</label>
+        <input class="form-input" type="email" id="email" name="email"
+               value="{{ current_user_email or '' }}"
+               placeholder="your@email.com" required maxlength="255"
+               autocomplete="email" />
+        <p class="form-hint" style="font-size:0.8rem;color:var(--color-text-muted);margin-top:4px;">
+          Your confirmation will be sent to this address.
+        </p>
+      </div>
+
+      <!-- Phone Number -->
+      <div class="form-group">
+        <label class="form-label eyebrow" for="phone_number">Phone Number</label>
+        <input class="form-input" type="tel" id="phone_number" name="phone_number"
+               value="{{ guest.phone_number or '' }}"
+               placeholder="+1 (555) 000-0000" maxlength="30"
+               autocomplete="tel" />
+      </div>
+
+      <!-- Attendance -->
+      <div class="form-group">
+        <label class="form-label eyebrow">Will you attend? *</label>
+        <div class="toggle-pills" role="group" aria-label="Attendance choice">
+          <label class="pill">
+            <input type="radio" name="rsvp_status" value="attending"
+                   {% if guest and guest.rsvp_status == 'attending' %}checked{% endif %}
+                   required />
+            <span class="pill-label">Joyfully Accept</span>
+          </label>
+          <label class="pill">
+            <input type="radio" name="rsvp_status" value="not_attending"
+                   {% if guest and guest.rsvp_status == 'not_attending' %}checked{% endif %} />
+            <span class="pill-label">Regretfully Decline</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Parking (shown when attending) -->
+      <div class="form-group form-group--conditional" id="parking-group" style="display:none;">
+        <label class="form-label eyebrow">Do you need parking?</label>
+        <div class="toggle-pills" role="group" aria-label="Parking choice">
+          <label class="pill">
+            <input type="radio" name="parking_required" value="yes"
+                   {% if guest and guest.parking_required %}checked{% endif %} />
+            <span class="pill-label">Yes, I need parking</span>
+          </label>
+          <label class="pill">
+            <input type="radio" name="parking_required" value="no"
+                   {% if not (guest and guest.parking_required) %}checked{% endif %} />
+            <span class="pill-label">No, I have a ride</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Special Requests -->
+      <div class="form-group">
+        <label class="form-label eyebrow" for="special_requests">
+          Notes / Special Requests
+        </label>
+        <textarea class="form-input form-textarea" id="special_requests"
+                  name="special_requests" rows="3"
+                  placeholder="Allergies, dietary needs, accessibility requirements…"
+                  maxlength="500">{{ guest.special_requests or '' }}</textarea>
+      </div>
+
+      <!-- Submit -->
+      <div class="form-group">
+        <button type="submit" class="btn btn--primary btn--full">
+          Submit RSVP &rarr;
+        </button>
+      </div>
+
+    </form>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const attendanceInputs = document.querySelectorAll('input[name="rsvp_status"]');
+  const parkingGroup = document.getElementById('parking-group');
+
+  function updateConditionalFields() {
+    const attending = document.querySelector('input[name="rsvp_status"]:checked')?.value === 'attending';
+    parkingGroup.style.display = attending ? 'block' : 'none';
+  }
+
+  attendanceInputs.forEach(el => el.addEventListener('change', updateConditionalFields));
+  updateConditionalFields();
+</script>
+{% endblock %}
 
 <!-- ===== RSVP FORM ===== -->
 <section class="section" aria-label="RSVP form">

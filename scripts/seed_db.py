@@ -29,24 +29,24 @@ from app.models.wedding_config import WeddingConfig
 # ---------------------------------------------------------------------------
 DEFAULT_CONFIG: dict[str, str] = {
     # ---- Couple Details ----
-    "couple_name_1": "Pierce",                              # EDIT THIS
-    "couple_name_2": "[Partner Name]",                      # EDIT THIS
-    "wedding_date": "[Wedding Date]",                       # EDIT THIS  e.g. "December 12, 2026"
-    "wedding_time": "[Wedding Time]",                       # EDIT THIS  e.g. "4:00 PM"
+    "couple_name_1": "Pierce",
+    "couple_name_2": "Haj",
+    "wedding_date":  "",                                    # EDIT THIS  e.g. "2026-12-12"
+    "wedding_time":  "",                                    # EDIT THIS  e.g. "16:00"
 
     # ---- Venue ----
-    "venue_name": "[Venue Name]",                           # EDIT THIS
-    "venue_address": "[Full Venue Address]",                # EDIT THIS
-    "venue_google_maps_url": "#",                           # EDIT THIS  full Google Maps URL
+    "venue_name":            "",                            # EDIT THIS
+    "venue_address":         "",                            # EDIT THIS
+    "venue_google_maps_url": "#",                           # EDIT THIS
 
     # ---- Style & Dress Code ----
-    "dress_code": "[Dress Code]",                           # EDIT THIS  e.g. "Black Tie Optional"
-    "theme_description": "[Theme Description]",             # EDIT THIS
+    "dress_code":        "Black Tie",                       # EDIT THIS
+    "theme_description": "Burgundy, White & Black",
 
     # ---- Theme Colours (CSS vars) ----
-    "color_primary":   "#c9a96e",                           # Warm gold
-    "color_secondary": "#e8c4b8",                           # Soft blush
-    "color_accent":    "#ff6b35",                           # Bright orange
+    "color_primary":   "#800020",                           # Burgundy
+    "color_secondary": "#c4536e",                           # Rose
+    "color_accent":    "#5a0014",                           # Deep Burgundy
 
     # ---- Typography ----
     "font_heading":    "Cormorant Garamond",
@@ -54,13 +54,13 @@ DEFAULT_CONFIG: dict[str, str] = {
     "font_body":       "Lato",
 
     # ---- RSVP Settings ----
-    "rsvp_deadline": "[RSVP Deadline Date]",                # EDIT THIS  e.g. "November 1, 2026"
-    "rsvp_open":     "true",                                # Set to "false" to close RSVP
+    "rsvp_deadline": "",                                    # EDIT THIS  e.g. "2026-11-01"
+    "rsvp_open":     "true",
 
     # ---- Content ----
-    "hero_image_url":   "/static/images/placeholder.jpg",  # EDIT after uploading hero photo
-    "custom_message":   "We can't wait to celebrate with you!",  # EDIT THIS
-    "wedding_hashtag":  "#OurWedding2026",                  # EDIT THIS
+    "hero_image_url":  "/static/images/placeholder.jpg",   # EDIT after uploading hero photo
+    "custom_message":  "We can't wait to celebrate with you!",
+    "wedding_hashtag": "#PierceAndHaj",
 }
 
 

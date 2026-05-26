@@ -6,20 +6,20 @@
 
 :root {
   /* --- Backgrounds --- */
-  --color-bg-primary:   #0d0d0d;
-  --color-bg-secondary: #141414;
-  --color-bg-card:      #1a1a1a;
-  --color-bg-overlay:   rgba(0, 0, 0, 0.55);
+  --color-bg-primary:   #ffffff;
+  --color-bg-secondary: #f9f3f3;
+  --color-bg-card:      #fff7f7;
+  --color-bg-overlay:   rgba(0, 0, 0, 0.50);
 
   /* --- Text --- */
-  --color-text-primary:   #ffffff;
-  --color-text-secondary: #b0b0b0;
-  --color-text-muted:     #666666;
+  --color-text-primary:   #1a0a0a;
+  --color-text-secondary: #4a3030;
+  --color-text-muted:     #9a7a7a;
 
-  /* --- Accents (warm gold / blush) — overridden by DB --- */
-  --color-primary:   #c9a96e;
-  --color-secondary: #e8c4b8;
-  --color-accent:    #ff6b35;
+  /* --- Accents (burgundy / white / black) — overridden by DB --- */
+  --color-primary:   #800020;
+  --color-secondary: #c4536e;
+  --color-accent:    #5a0014;
 
   /* --- Typography — overridden by DB --- */
   --font-heading:    'Cormorant Garamond', serif;

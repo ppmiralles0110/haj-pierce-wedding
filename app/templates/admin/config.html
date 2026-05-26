@@ -1,30 +1,179 @@
 {% extends "admin/base_admin.html" %}
 {% block title %}Config{% endblock %}
-{% block page_title %}Wedding Config{% endblock %}
+{% block page_title %}Wedding Settings{% endblock %}
 
 {% block content %}
+
+{# Build a lookup dict from config_rows so templates can get values easily #}
+{% set cfg = {} %}
+{% for row in config_rows %}{% set _ = cfg.update({row.key: row.value}) %}{% endfor %}
+
 <div class="admin-section">
-  <p style="color:#b0b0b0;margin-bottom:24px;">
-    Edit any wedding configuration value below. Changes take effect immediately.
+  <p style="margin-bottom:32px;color:var(--color-text-secondary);">
+    Edit wedding details below. Changes take effect immediately across the entire website.
   </p>
+
   <form method="POST" action="{{ url_for('admin.config') }}">
-    <div class="config-grid">
-      {% for row in config_rows %}
-      <div class="config-row">
-        <label class="config-key" for="cfg-{{ row.key }}">{{ row.key }}</label>
-        <input
-          class="form-input"
-          type="text"
-          id="cfg-{{ row.key }}"
-          name="{{ row.key }}"
-          value="{{ row.value }}"
-        />
+
+    <!-- ── Couple ── -->
+    <fieldset class="config-fieldset">
+      <legend class="config-legend">Couple</legend>
+      <div class="config-grid">
+        <div class="config-row">
+          <label class="config-key" for="cfg-couple_name_1">Partner 1 Name</label>
+          <input class="form-input" type="text" id="cfg-couple_name_1" name="couple_name_1"
+                 value="{{ cfg.get('couple_name_1', 'Pierce') }}" placeholder="Pierce" />
+        </div>
+        <div class="config-row">
+          <label class="config-key" for="cfg-couple_name_2">Partner 2 Name</label>
+          <input class="form-input" type="text" id="cfg-couple_name_2" name="couple_name_2"
+                 value="{{ cfg.get('couple_name_2', 'Haj') }}" placeholder="Haj" />
+        </div>
+        <div class="config-row">
+          <label class="config-key" for="cfg-custom_message">Custom Hero Message</label>
+          <input class="form-input" type="text" id="cfg-custom_message" name="custom_message"
+                 value="{{ cfg.get('custom_message', '') }}" placeholder="A personal note for guests" />
+        </div>
       </div>
-      {% endfor %}
-    </div>
+    </fieldset>
+
+    <!-- ── Event Details ── -->
+    <fieldset class="config-fieldset">
+      <legend class="config-legend">Event Details</legend>
+      <div class="config-grid">
+        <div class="config-row">
+          <label class="config-key" for="cfg-wedding_date">Wedding Date</label>
+          <input class="form-input" type="date" id="cfg-wedding_date" name="wedding_date"
+                 value="{{ cfg.get('wedding_date', '') }}" />
+        </div>
+        <div class="config-row">
+          <label class="config-key" for="cfg-wedding_time">Wedding Time</label>
+          <input class="form-input" type="time" id="cfg-wedding_time" name="wedding_time"
+                 value="{{ cfg.get('wedding_time', '') }}" />
+        </div>
+        <div class="config-row">
+          <label class="config-key" for="cfg-rsvp_deadline">RSVP Deadline</label>
+          <input class="form-input" type="date" id="cfg-rsvp_deadline" name="rsvp_deadline"
+                 value="{{ cfg.get('rsvp_deadline', '') }}" />
+        </div>
+        <div class="config-row">
+          <label class="config-key" for="cfg-rsvp_open">RSVP Open? (true/false)</label>
+          <input class="form-input" type="text" id="cfg-rsvp_open" name="rsvp_open"
+                 value="{{ cfg.get('rsvp_open', 'true') }}" placeholder="true" />
+        </div>
+        <div class="config-row">
+          <label class="config-key" for="cfg-dress_code">Dress Code</label>
+          <input class="form-input" type="text" id="cfg-dress_code" name="dress_code"
+                 value="{{ cfg.get('dress_code', '') }}" placeholder="Black Tie Optional" />
+        </div>
+        <div class="config-row">
+          <label class="config-key" for="cfg-theme_description">Theme / Motif</label>
+          <input class="form-input" type="text" id="cfg-theme_description" name="theme_description"
+                 value="{{ cfg.get('theme_description', '') }}" placeholder="Burgundy, White & Black" />
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- ── Venue ── -->
+    <fieldset class="config-fieldset">
+      <legend class="config-legend">Venue</legend>
+      <div class="config-grid">
+        <div class="config-row">
+          <label class="config-key" for="cfg-venue_name">Venue Name</label>
+          <input class="form-input" type="text" id="cfg-venue_name" name="venue_name"
+                 value="{{ cfg.get('venue_name', '') }}" placeholder="The Grand Ballroom" />
+        </div>
+        <div class="config-row config-row--wide">
+          <label class="config-key" for="cfg-venue_address">Venue Address</label>
+          <input class="form-input" type="text" id="cfg-venue_address" name="venue_address"
+                 value="{{ cfg.get('venue_address', '') }}" placeholder="123 Main St, City, State" />
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- ── Appearance ── -->
+    <fieldset class="config-fieldset">
+      <legend class="config-legend">Appearance</legend>
+      <div class="config-grid">
+        <div class="config-row">
+          <label class="config-key" for="cfg-color_primary">Primary Color (Burgundy)</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="color" id="cfg-color_primary_picker"
+                   value="{{ cfg.get('color_primary', '#800020') }}"
+                   oninput="document.getElementById('cfg-color_primary').value=this.value"
+                   style="height:38px;width:50px;border:none;cursor:pointer;border-radius:4px;" />
+            <input class="form-input" type="text" id="cfg-color_primary" name="color_primary"
+                   value="{{ cfg.get('color_primary', '#800020') }}" placeholder="#800020"
+                   oninput="document.getElementById('cfg-color_primary_picker').value=this.value" />
+          </div>
+        </div>
+        <div class="config-row">
+          <label class="config-key" for="cfg-color_secondary">Secondary Color</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="color" id="cfg-color_secondary_picker"
+                   value="{{ cfg.get('color_secondary', '#c4536e') }}"
+                   oninput="document.getElementById('cfg-color_secondary').value=this.value"
+                   style="height:38px;width:50px;border:none;cursor:pointer;border-radius:4px;" />
+            <input class="form-input" type="text" id="cfg-color_secondary" name="color_secondary"
+                   value="{{ cfg.get('color_secondary', '#c4536e') }}" placeholder="#c4536e"
+                   oninput="document.getElementById('cfg-color_secondary_picker').value=this.value" />
+          </div>
+        </div>
+        <div class="config-row">
+          <label class="config-key" for="cfg-hero_image_url">Hero Image URL</label>
+          <input class="form-input" type="text" id="cfg-hero_image_url" name="hero_image_url"
+                 value="{{ cfg.get('hero_image_url', '') }}" placeholder="https://... or /static/uploads/..." />
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- ── Save ── -->
     <div style="margin-top:32px;">
       <button type="submit" class="admin-btn">Save All Changes</button>
     </div>
+
   </form>
 </div>
+
+<style>
+.config-fieldset {
+  border: 1px solid var(--color-border, #e0d0d0);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+.config-legend {
+  font-family: var(--font-subheading, 'Montserrat', sans-serif);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-primary, #800020);
+  padding: 0 8px;
+}
+.config-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.config-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.config-row--wide {
+  grid-column: 1 / -1;
+}
+.config-key {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary, #4a3030);
+}
+@media (max-width: 600px) {
+  .config-grid { grid-template-columns: 1fr; }
+}
+</style>
+
 {% endblock %}

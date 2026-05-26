@@ -91,6 +91,21 @@ class Guest(db.Model):
         comment="Dietary restrictions, accessibility needs, etc.",
     )
 
+    # Phone number for confirmation SMS / contact
+    phone_number = db.Column(
+        db.String(30),
+        nullable=True,
+        comment="Guest phone number",
+    )
+
+    # Whether the guest needs a parking spot
+    parking_required = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False,
+        comment="True if the guest requires parking",
+    )
+
     # Timestamp when the guest submitted their RSVP
     rsvp_submitted_at = db.Column(
         db.DateTime(timezone=True),
@@ -134,6 +149,8 @@ class Guest(db.Model):
             "plus_one_name": self.plus_one_name,
             "table_number": self.table_number,
             "special_requests": self.special_requests,
+            "phone_number": self.phone_number,
+            "parking_required": self.parking_required,
             "rsvp_submitted_at": (
                 self.rsvp_submitted_at.isoformat() if self.rsvp_submitted_at else None
             ),

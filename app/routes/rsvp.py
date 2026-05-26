@@ -47,10 +47,10 @@ def rsvp():
 
     if request.method == "POST":
         name = request.form.get("name", "").strip()
+        email = request.form.get("email", email).strip().lower()
         rsvp_status = request.form.get("rsvp_status", "").strip()
-        meal_preference = request.form.get("meal_preference", "").strip() or None
-        plus_one = request.form.get("plus_one") == "yes"
-        plus_one_name = request.form.get("plus_one_name", "").strip() or None
+        phone_number = request.form.get("phone_number", "").strip() or None
+        parking_required = request.form.get("parking_required") == "yes"
         special_requests = request.form.get("special_requests", "").strip() or None
 
         # Basic validation
@@ -62,10 +62,6 @@ def rsvp():
             flash("Please select whether you will attend.", "error")
             return render_template("rsvp.html", guest=guest)
 
-        if rsvp_status == "attending" and not meal_preference:
-            flash("Please select your meal preference.", "error")
-            return render_template("rsvp.html", guest=guest)
-
         # Upsert the guest record
         if not guest:
             guest = Guest(email=email)
@@ -73,9 +69,8 @@ def rsvp():
 
         guest.name = name
         guest.rsvp_status = rsvp_status
-        guest.meal_preference = meal_preference if rsvp_status == "attending" else None
-        guest.plus_one = plus_one and rsvp_status == "attending"
-        guest.plus_one_name = plus_one_name if guest.plus_one else None
+        guest.phone_number = phone_number
+        guest.parking_required = parking_required if rsvp_status == "attending" else False
         guest.special_requests = special_requests
         guest.rsvp_submitted_at = datetime.now(timezone.utc)
         db.session.commit()
@@ -92,13 +87,12 @@ def rsvp():
         ai_message = None
         try:
             from app.services.ai_service import generate_rsvp_confirmation
-            from app.models.wedding_config import WeddingConfig
             config_rows = WeddingConfig.query.all()
-            wedding_config = {row.key: row.value for row in config_rows}
+            wedding_config_data = {row.key: row.value for row in config_rows}
             ai_message = generate_rsvp_confirmation(
                 guest_name=name,
                 attending=(rsvp_status == "attending"),
-                wedding_config=wedding_config,
+                wedding_config=wedding_config_data,
             )
         except Exception as exc:
             logger.warning("Could not generate AI RSVP message: %s", exc)

@@ -159,12 +159,25 @@ def photos():
             return redirect(url_for("admin.photos"))
 
         try:
-            from app.services.storage_service import upload_photo
-            blob_url = upload_photo(
-                file_data=file.read(),
-                original_filename=file.filename,
-                uploaded_by=session["user_email"],
-            )
+            if current_app.config.get("BLOB_STORAGE_URL"):
+                # Production path — Azure Blob Storage
+                from app.services.storage_service import upload_photo
+                blob_url = upload_photo(
+                    file_data=file.read(),
+                    original_filename=file.filename,
+                    uploaded_by=session["user_email"],
+                )
+            else:
+                # Local development path — save to static/uploads/
+                import os
+                import time
+                from werkzeug.utils import secure_filename
+                uploads_dir = os.path.join(current_app.root_path, "static", "uploads")
+                os.makedirs(uploads_dir, exist_ok=True)
+                safe_name = secure_filename(file.filename)
+                unique_name = f"{int(time.time())}_{safe_name}"
+                file.save(os.path.join(uploads_dir, unique_name))
+                blob_url = f"/static/uploads/{unique_name}"
             photo = Photo(
                 blob_url=blob_url,
                 uploaded_by=session["user_email"],

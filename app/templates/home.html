@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Home — {{ wedding_config.get('couple_name_1', 'Pierce') }} &amp; {{ wedding_config.get('couple_name_2', '') }}{% endblock %}
+{% block title %}Home — {{ wedding_config.get('couple_name_1', 'Pierce') }} &amp; {{ wedding_config.get('couple_name_2', 'Haj') }}{% endblock %}
 
 {% block content %}
 
@@ -20,7 +20,7 @@
     <h1 class="hero-title">
       {{ wedding_config.get('couple_name_1', 'Pierce') }}<br />
       <span class="hero-title-amp">&amp;</span><br />
-      {{ wedding_config.get('couple_name_2', '') }}
+      {{ wedding_config.get('couple_name_2', 'Haj') }}
     </h1>
     <div class="hero-divider" aria-hidden="true"></div>
     <p class="hero-subtitle">{{ wedding_config.get('custom_message', 'We can\'t wait to celebrate with you!') }}</p>
@@ -83,7 +83,12 @@
 
 
 <!-- ===== GALLERY PREVIEW ===== -->
-{% if preview_photos %}
+{% set sample_photos = [
+  {'url': 'https://picsum.photos/seed/couple1/800/600', 'caption': 'Engagement Day'},
+  {'url': 'https://picsum.photos/seed/couple2/800/600', 'caption': 'Together'},
+  {'url': 'https://picsum.photos/seed/couple3/800/600', 'caption': 'Our Story'},
+  {'url': 'https://picsum.photos/seed/couple4/800/600', 'caption': 'Forever'}
+] %}
 <section class="section gallery-preview" aria-label="Photo gallery preview">
   <div class="container">
     <div class="section-header animate-on-scroll">
@@ -91,18 +96,18 @@
       <h2 class="section-title">Our Story</h2>
     </div>
     <div class="gallery-grid gallery-grid--4">
-      {% for photo in preview_photos %}
+      {% for photo in (preview_photos if preview_photos else sample_photos) %}
       <article class="gallery-card animate-on-scroll">
         <div class="gallery-card-img-wrap">
-          <img src="{{ photo.blob_url }}"
-               alt="{{ photo.caption or 'Wedding photo ' ~ loop.index }}"
+          <img src="{{ photo.blob_url if photo is not mapping else photo.url }}"
+               alt="{{ photo.caption if photo is not mapping else photo['caption'] }}"
                loading="lazy"
                class="gallery-card-img" />
           <div class="gallery-card-overlay">
             <span class="gallery-card-num">0{{ loop.index }}</span>
-            {% if photo.caption %}
-              <p class="gallery-card-caption">{{ photo.caption }}</p>
-            {% endif %}
+            <p class="gallery-card-caption">
+              {{ photo.caption if photo is not mapping else photo['caption'] }}
+            </p>
           </div>
         </div>
       </article>
@@ -113,7 +118,6 @@
     </div>
   </div>
 </section>
-{% endif %}
 <!-- ===== END GALLERY PREVIEW ===== -->
 
 
