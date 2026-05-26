@@ -97,20 +97,6 @@
         </div>
       </div>
 
-      <!-- Special Requests -->
-      <div class="form-group">
-        <label class="form-label eyebrow" for="special_requests">
-          Notes / Special Requests
-        </label>
-        <textarea class="form-input form-textarea" id="special_requests"
-                  name="special_requests" rows="3"
-                  placeholder="Allergies, dietary needs, accessibility requirements…"
-                  maxlength="1000">{{ guest.special_requests or '' }}</textarea>
-        <p class="form-hint" style="font-size:0.8rem;color:var(--color-text-muted);margin-top:4px;text-align:right;">
-          <span id="char-count">{{ (guest.special_requests or '')|length }}</span>/1000
-        </p>
-      </div>
-
       <!-- Submit -->
       <div class="form-group">
         <button type="submit" class="btn btn--primary btn--full">
@@ -138,14 +124,19 @@
   attendanceInputs.forEach(el => el.addEventListener('change', updateConditionalFields));
   updateConditionalFields();
 
-  // Character counter for special requests
-  const textarea = document.getElementById('special_requests');
-  const charCount = document.getElementById('char-count');
-  if (textarea && charCount) {
-    textarea.addEventListener('input', () => {
-      charCount.textContent = textarea.value.length;
-      charCount.style.color = textarea.value.length > 900 ? 'var(--color-primary)' : 'var(--color-text-muted)';
+  // Email format validation on blur
+  const emailInput = document.getElementById('email');
+  if (emailInput) {
+    emailInput.addEventListener('blur', () => {
+      const val = emailInput.value.trim();
+      if (val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+        emailInput.setCustomValidity('Please enter a valid email address (e.g. name@example.com).');
+        emailInput.reportValidity();
+      } else {
+        emailInput.setCustomValidity('');
+      }
     });
+    emailInput.addEventListener('input', () => emailInput.setCustomValidity(''));
   }
 
   // PH phone validation feedback

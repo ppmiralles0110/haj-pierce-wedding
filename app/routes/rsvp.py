@@ -52,7 +52,6 @@ def rsvp():
         rsvp_status = request.form.get("rsvp_status", "").strip()
         phone_number = request.form.get("phone_number", "").strip() or None
         parking_required = request.form.get("parking_required") == "yes"
-        special_requests = request.form.get("special_requests", "").strip() or None
 
         # Basic validation
         if not name:
@@ -67,9 +66,6 @@ def rsvp():
             flash("Please enter a valid Philippine mobile number (09XXXXXXXXX or +639XXXXXXXXX).", "error")
             return render_template("rsvp.html", guest=guest)
 
-        if special_requests and len(special_requests) > 1000:
-            special_requests = special_requests[:1000]
-
         if rsvp_status not in ("attending", "not_attending"):
             flash("Please select whether you will attend.", "error")
             return render_template("rsvp.html", guest=guest)
@@ -83,16 +79,14 @@ def rsvp():
         guest.rsvp_status = rsvp_status
         guest.phone_number = phone_number
         guest.parking_required = parking_required if rsvp_status == "attending" else False
-        guest.special_requests = special_requests
         guest.rsvp_submitted_at = datetime.now(timezone.utc)
         db.session.commit()
 
         logger.info(
-            "RSVP submitted: %s — status=%s meal=%s +1=%s",
+            "RSVP submitted: %s — status=%s parking=%s",
             email,
             rsvp_status,
-            meal_preference,
-            plus_one,
+            parking_required,
         )
 
         # Generate a personalised AI confirmation message

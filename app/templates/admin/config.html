@@ -34,6 +34,14 @@
           <input class="form-input" type="text" id="cfg-custom_message" name="custom_message"
                  value="{{ cfg.get('custom_message', '') }}" placeholder="A personal note for guests" />
         </div>
+        <div class="config-row">
+          <label class="config-key" for="cfg-wedding_hashtag">Wedding Hashtag</label>
+          <input class="form-input" type="text" id="cfg-wedding_hashtag" name="wedding_hashtag"
+                 value="{{ cfg.get('wedding_hashtag', '') }}" placeholder="#PierceAndHaj" />
+          <small style="color:var(--color-text-secondary);font-size:12px;margin-top:4px;display:block;">
+            Shown in the footer and on the RSVP success page.
+          </small>
+        </div>
       </div>
     </fieldset>
 
