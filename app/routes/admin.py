@@ -47,16 +47,11 @@ def dashboard():
         "attending": Guest.query.filter_by(rsvp_status="attending").count(),
         "not_attending": Guest.query.filter_by(rsvp_status="not_attending").count(),
         "pending": Guest.query.filter_by(rsvp_status="pending").count(),
-        "plus_ones": Guest.query.filter_by(plus_one=True).count(),
+        "parking_needed": Guest.query.filter_by(rsvp_status="attending", parking_required=True).count(),
         "total_photos": Photo.query.count(),
         "guestbook_count": GuestbookMessage.query.count(),
         "chat_logs": AiChatLog.query.count(),
     }
-    # Meal breakdown
-    for meal in ("chicken", "fish", "vegetarian", "vegan"):
-        stats[f"meal_{meal}"] = Guest.query.filter_by(
-            rsvp_status="attending", meal_preference=meal
-        ).count()
 
     return render_template("admin/dashboard.html", stats=stats)
 
