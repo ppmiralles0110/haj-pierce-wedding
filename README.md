@@ -2,6 +2,8 @@
 
 A dark cinematic editorial wedding website built with **Python/Flask**, **Azure OpenAI**, and deployed on **Azure App Service** with full Infrastructure-as-Code via **Terraform**.
 
+> **Live at:** `https://wedding-prod-app.azurewebsites.net` (served via Azure Front Door with WAF)
+
 ---
 
 ## Architecture
@@ -151,33 +153,45 @@ CI runs on every push. Deployment only runs on push to `main`.
 
 ---
 
-## Admin Panel
+## Features
 
-After deploying, visit `/admin/` with an email in the `ADMIN_EMAILS` config to:
-- View RSVP dashboard and guest list
-- Export RSVPs to CSV
-- Edit all website content (couple names, dates, venue, etc.)
-- Upload and manage gallery photos
-- Moderate guestbook messages
+### Guest Experience
+- **OTP authentication** — guests log in via one-time passcode sent to their email
+- **RSVP form** — name, email (validated), Philippine phone number, attendance status, and optional parking request
+- **AI wedding chat** — powered by Azure OpenAI gpt-4o-mini; answers questions about the event
+- **Photo gallery** — guests can upload and browse photos stored in Azure Blob Storage
+- **Guestbook** — leave a message for the couple, moderated by admins
+
+### Admin Panel
+After deploying, visit `/admin/` with an email in the `ADMIN_EMAILS` list to access:
+
+| Section | Features |
+|---------|---------|
+| **Dashboard** | Total Guests, Attending, Declined, Pending, Need Parking, Photos, Guestbook, Chat logs |
+| **Guest List** | Full RSVP table with parking column; CSV export |
+| **Login Logs** | Login history with IP address and geolocation (latitude/longitude + reverse-geocoded name) |
+| **Config** | Edit couple names, wedding date, venue, RSVP open/close, AI chat system prompt, wedding hashtag, colour scheme, hero image (file upload), dress code photos (file upload) |
+| **Photos** | Upload gallery photos; stored to Azure Blob Storage (local: `static/uploads/`) |
+| **Guestbook** | Review and delete messages |
+
+### Security Highlights
+- All secrets stored in **Azure Key Vault**; injected into App Service via Key Vault references — zero secrets in code or environment variables
+- System-assigned **Managed Identity** — no stored credentials anywhere
+- OTP codes **SHA-256 hashed** before storage; compared with `secrets.compare_digest()`
+- **Rate limiting** on all authentication endpoints (Flask-Limiter)
+- File uploads validate extension and MIME content type whitelist
+- **HTTPS enforced** at Front Door and App Service level; TLS 1.2 minimum
+- Login geolocation captured for every successful sign-in (IP + Nominatim reverse geocode)
 
 ---
 
 ## Post-Deployment Checklist
 
-- [ ] Run `python scripts/seed_db.py` to seed default config
+- [ ] Run `flask db upgrade` via SSH or App Service console
+- [ ] Run `python scripts/seed_db.py` to seed default config values
 - [ ] Visit `/admin/config` and fill in all `[EDIT THIS]` values
-- [ ] Upload a hero image via the admin photos page
+- [ ] Upload a hero image and dress code photos via Admin → Config
 - [ ] Send a test OTP email to verify SendGrid integration
-- [ ] Test AI chat widget end-to-end
+- [ ] Test the AI chat widget end-to-end
 - [ ] Set `rsvp_open = true` when ready to accept RSVPs
 - [ ] Set `rsvp_open = false` after the RSVP deadline
-
----
-
-## Security Notes
-
-- All secrets are stored in **Azure Key Vault** and injected as App Service Key Vault references — no secrets are stored in code or environment variables directly.
-- OTP codes are **SHA-256 hashed** before storage and compared with `secrets.compare_digest()`.
-- Rate limiting is applied to all authentication endpoints.
-- File uploads validate extension and content type whitelist.
-- HTTPS enforced at Front Door and App Service level.
