@@ -5,6 +5,13 @@
 <section class="auth-section" aria-label="Verify OTP">
   <div class="auth-card animate-on-scroll">
 
+    {% if dev_otp %}
+    <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:12px 16px;margin-bottom:20px;text-align:center;">
+      <strong style="color:#856404;">⚠ DEV MODE — Your one-time code:</strong><br>
+      <span style="font-size:2rem;font-weight:700;letter-spacing:0.3em;color:#212529;">{{ dev_otp }}</span>
+    </div>
+    {% endif %}
+
     <div class="auth-brand">
       <p class="eyebrow">Check Your Email</p>
       <h1 class="auth-title">Enter Your Code</h1>

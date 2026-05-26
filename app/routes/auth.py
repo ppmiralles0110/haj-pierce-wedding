@@ -165,6 +165,19 @@ def login():
             db.session.add(guest)
             db.session.commit()
 
+        # Store email in session for the verify step (not the OTP)
+        session["pending_email"] = email
+
+        # Dev mode: no SendGrid key — show OTP directly on the verify page
+        if not current_app.config.get("SENDGRID_API_KEY"):
+            session["dev_otp"] = otp_code  # cleared after display
+            flash(
+                "DEV MODE: Email sending is disabled. "
+                "Your one-time code is shown below.",
+                "warning",
+            )
+            return redirect(url_for("auth.verify"))
+
         # Send OTP via SendGrid
         try:
             from app.services.email_service import send_otp_email
@@ -177,8 +190,6 @@ def login():
                 otp_code=otp_code,  # Plaintext to email; NEVER log
                 couple_names=couple_names,
             )
-            # Store email in session for the verify step (not the OTP)
-            session["pending_email"] = email
             flash(
                 "We've sent a 6-digit code to your email. "
                 "Check your inbox (and spam folder).",
@@ -195,6 +206,7 @@ def login():
             # Clean up the token we just created
             db.session.delete(token)
             db.session.commit()
+            session.pop("pending_email", None)
             return render_template("auth/login.html")
 
     return render_template("auth/login.html")
@@ -213,6 +225,9 @@ def verify():
     if not pending_email:
         flash("Please enter your email address first.", "info")
         return redirect(url_for("auth.login"))
+
+    # Dev mode: pop the OTP from session so it can be shown once
+    dev_otp = session.pop("dev_otp", None)
 
     if request.method == "POST":
         submitted_code = request.form.get("otp", "").strip()
@@ -266,7 +281,7 @@ def verify():
         flash("Welcome! You're now logged in.", "success")
         return redirect(url_for("main.home"))
 
-    return render_template("auth/verify.html", email=pending_email)
+    return render_template("auth/verify.html", email=pending_email, dev_otp=dev_otp)
 
 
 @auth_bp.route("/logout")
