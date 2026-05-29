@@ -161,16 +161,16 @@
   <script src="{{ url_for('static', filename='js/idle-logout.js') }}" defer></script>
   {% endif %}
   <script>
-    // Navbar scroll behaviour
-    const navbar = document.getElementById('navbar');
+    // Navbar scroll behaviour + hamburger toggle
+    const navbar    = document.getElementById('navbar');
+    const hamburger = document.getElementById('nav-hamburger');
+    const navLinks  = document.getElementById('nav-links');
+
     window.addEventListener('scroll', () => {
       navbar.classList.toggle('navbar--scrolled', window.scrollY > 60);
     }, { passive: true });
 
     // Mobile hamburger toggle
-    const hamburger = document.getElementById('nav-hamburger');
-    const navbar    = document.getElementById('navbar');
-    const navLinks  = document.getElementById('nav-links');
     hamburger.addEventListener('click', () => {
       const expanded = hamburger.getAttribute('aria-expanded') === 'true';
       hamburger.setAttribute('aria-expanded', String(!expanded));
@@ -180,7 +180,7 @@
       // Prevent body scroll while nav is open
       document.body.style.overflow = !expanded ? 'hidden' : '';
     });
-    // Close nav on link click (single-page navigation)
+    // Close nav on link click
     navLinks.addEventListener('click', (e) => {
       if (e.target.closest('a')) {
         navLinks.classList.remove('nav-links--open');
