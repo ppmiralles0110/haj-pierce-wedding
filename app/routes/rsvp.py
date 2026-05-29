@@ -92,10 +92,10 @@ def rsvp():
 
         # Generate a personalised AI confirmation message
         ai_message = None
+        config_rows = WeddingConfig.query.all()
+        wedding_config_data = {row.key: row.value for row in config_rows}
         try:
             from app.services.ai_service import generate_rsvp_confirmation
-            config_rows = WeddingConfig.query.all()
-            wedding_config_data = {row.key: row.value for row in config_rows}
             ai_message = generate_rsvp_confirmation(
                 guest_name=name,
                 attending=(rsvp_status == "attending"),
@@ -103,6 +103,24 @@ def rsvp():
             )
         except Exception as exc:
             logger.warning("Could not generate AI RSVP message: %s", exc)
+
+        # Send RSVP confirmation email
+        try:
+            from app.services.email_service import send_rsvp_confirmation_email
+            couple_names = (
+                f"{wedding_config_data.get('couple_name_1', '')} & "
+                f"{wedding_config_data.get('couple_name_2', '')}"
+            ).strip(" &")
+            send_rsvp_confirmation_email(
+                to_email=email,
+                guest_name=name,
+                attending=(rsvp_status == "attending"),
+                couple_names=couple_names,
+                wedding_date=wedding_config_data.get("wedding_date", ""),
+                wedding_venue=wedding_config_data.get("venue_name", ""),
+            )
+        except Exception as exc:
+            logger.warning("Could not send RSVP confirmation email: %s", exc)
 
         return render_template(
             "rsvp_success.html",

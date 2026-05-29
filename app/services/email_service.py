@@ -166,3 +166,166 @@ def _build_otp_html(otp_code: str, couple_names: str) -> str:
   </table>
 </body>
 </html>"""
+
+
+# =============================================================================
+# RSVP Confirmation Email
+# =============================================================================
+
+def send_rsvp_confirmation_email(
+    to_email: str,
+    guest_name: str,
+    attending: bool,
+    couple_names: str,
+    wedding_date: str = "",
+    wedding_venue: str = "",
+) -> bool:
+    """
+    Send an RSVP confirmation email to the guest.
+
+    Args:
+        to_email: Recipient email address.
+        guest_name: Guest's full name.
+        attending: True if the guest is attending, False if declining.
+        couple_names: Couple's names for branding.
+        wedding_date: Optional date string for the email body.
+        wedding_venue: Optional venue name.
+
+    Returns:
+        True on successful delivery.
+
+    Raises:
+        EmailServiceError: If Gmail SMTP is misconfigured or delivery fails.
+    """
+    gmail_user = current_app.config.get("GMAIL_USER")
+    gmail_password = current_app.config.get("GMAIL_APP_PASSWORD")
+    from_name = current_app.config.get("MAIL_FROM_NAME", couple_names)
+
+    if not gmail_user or not gmail_password:
+        raise EmailServiceError("GMAIL_USER or GMAIL_APP_PASSWORD is not configured.")
+
+    if attending:
+        subject = f"You're confirmed! See you at {couple_names}'s Wedding 🎉"
+    else:
+        subject = f"We'll miss you — RSVP received for {couple_names}'s Wedding"
+
+    html_content = _build_rsvp_html(
+        guest_name=guest_name,
+        attending=attending,
+        couple_names=couple_names,
+        wedding_date=wedding_date,
+        wedding_venue=wedding_venue,
+    )
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = f"{from_name} <{gmail_user}>"
+    msg["To"] = to_email
+    msg.attach(MIMEText(html_content, "html"))
+
+    try:
+        with smtplib.SMTP(GMAIL_SMTP_HOST, GMAIL_SMTP_PORT) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(gmail_user, gmail_password)
+            server.sendmail(gmail_user, to_email, msg.as_string())
+        logger.info("RSVP confirmation sent to %s (attending=%s)", to_email, attending)
+        return True
+
+    except smtplib.SMTPAuthenticationError as exc:
+        logger.error("Gmail SMTP authentication failed: %s", exc)
+        raise EmailServiceError("Gmail authentication failed.") from exc
+
+    except Exception as exc:
+        logger.error("Failed to send RSVP confirmation to %s: %s", to_email, exc)
+        raise EmailServiceError(f"Failed to send email: {exc}") from exc
+
+
+def _build_rsvp_html(
+    guest_name: str,
+    attending: bool,
+    couple_names: str,
+    wedding_date: str,
+    wedding_venue: str,
+) -> str:
+    accent = "#c9a96e"
+    if attending:
+        status_line = "You're on the list! We can't wait to celebrate with you."
+        status_badge = f'<span style="background:{accent};color:#0d0d0d;padding:6px 20px;border-radius:2px;font-size:12px;letter-spacing:3px;text-transform:uppercase;font-family:\'Montserrat\',Arial,sans-serif;">Attending ✓</span>'
+        detail_block = ""
+        if wedding_date or wedding_venue:
+            detail_block = f"""
+              <div style="border:1px solid #2a2a2a;border-radius:4px;padding:24px;margin:24px 0;text-align:center;">
+                {'<p style="margin:0 0 6px;color:#c9a96e;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-family:\'Montserrat\',Arial,sans-serif;">Date</p><p style="margin:0 0 16px;color:#ffffff;font-size:16px;">' + wedding_date + '</p>' if wedding_date else ''}
+                {'<p style="margin:0 0 6px;color:#c9a96e;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-family:\'Montserrat\',Arial,sans-serif;">Venue</p><p style="margin:0;color:#ffffff;font-size:16px;">' + wedding_venue + '</p>' if wedding_venue else ''}
+              </div>"""
+        body_text = f"""
+              <p style="margin:0 0 20px;color:#b0b0b0;font-size:15px;line-height:1.7;">
+                Dear {guest_name},
+              </p>
+              <p style="margin:0 0 20px;color:#b0b0b0;font-size:15px;line-height:1.7;">
+                {status_line}
+              </p>
+              <div style="text-align:center;margin:24px 0;">{status_badge}</div>
+              {detail_block}
+              <p style="margin:0;color:#666666;font-size:13px;line-height:1.7;">
+                If you have any questions or need to update your RSVP, please reach out to us directly.
+              </p>"""
+    else:
+        status_badge = f'<span style="background:#2a2a2a;color:#b0b0b0;padding:6px 20px;border-radius:2px;font-size:12px;letter-spacing:3px;text-transform:uppercase;font-family:\'Montserrat\',Arial,sans-serif;">Unable to Attend</span>'
+        body_text = f"""
+              <p style="margin:0 0 20px;color:#b0b0b0;font-size:15px;line-height:1.7;">
+                Dear {guest_name},
+              </p>
+              <p style="margin:0 0 20px;color:#b0b0b0;font-size:15px;line-height:1.7;">
+                We completely understand and will truly miss celebrating with you.
+                Thank you so much for letting us know.
+              </p>
+              <div style="text-align:center;margin:24px 0;">{status_badge}</div>
+              <p style="margin:0;color:#666666;font-size:13px;line-height:1.7;">
+                We hope to see you again soon, and we'll be thinking of you on our special day.
+              </p>"""
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RSVP Confirmation</title>
+</head>
+<body style="margin:0;padding:0;background:#0d0d0d;font-family:'Lato',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0d0d0d;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="560" cellpadding="0" cellspacing="0"
+               style="background:#141414;border:1px solid #2a2a2a;border-radius:4px;overflow:hidden;">
+          <tr>
+            <td style="background:{accent};padding:28px 40px;text-align:center;">
+              <p style="margin:0;font-family:'Montserrat',Arial,sans-serif;
+                        font-size:11px;letter-spacing:4px;text-transform:uppercase;
+                        color:#0d0d0d;">RSVP Confirmation</p>
+              <h1 style="margin:8px 0 0;font-family:'Georgia',serif;
+                         font-size:28px;font-weight:400;color:#0d0d0d;">
+                {couple_names}
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:40px;">
+              {body_text}
+            </td>
+          </tr>
+          <tr>
+            <td style="border-top:1px solid #2a2a2a;padding:20px 40px;text-align:center;">
+              <p style="margin:0;color:#444444;font-size:12px;">
+                Sent with love from {couple_names}'s wedding website.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
