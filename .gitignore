@@ -88,3 +88,7 @@ yarn-error.log*
 
 # Uploads / static generated
 app/static/uploads/
+
+app.zip
+weddingphoto.jpg
+terraform/tfplan
