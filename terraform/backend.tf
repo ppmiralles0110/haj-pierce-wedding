@@ -18,8 +18,8 @@
 
 terraform {
   backend "azurerm" {
-    resource_group_name  = "tfstate-rg"          # EDIT THIS
-    storage_account_name = "weddingwebsitetfstate" # EDIT THIS (must be globally unique, 3-24 chars, lowercase/numbers)
+    resource_group_name  = "tfstate-rg"
+    storage_account_name = "wdtfstate2026"
     container_name       = "tfstate"
     key                  = "wedding-website.tfstate"
   }

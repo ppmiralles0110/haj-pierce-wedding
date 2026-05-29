@@ -28,7 +28,6 @@ module "key_vault" {
   project_name        = var.project_name
   environment         = var.environment
   owner_name          = var.owner_name
-  app_service_principal_id = module.app_service.principal_id
 }
 
 module "monitoring" {
@@ -92,7 +91,7 @@ module "app_service" {
     APPINSIGHTS_INSTRUMENTATIONKEY        = "@Microsoft.KeyVault(SecretUri=${module.key_vault.vault_uri}secrets/appinsights-key/)"
     APPLICATIONINSIGHTS_CONNECTION_STRING = module.monitoring.connection_string
     AZURE_OPENAI_ENDPOINT                 = module.ai_foundry.endpoint
-    AZURE_OPENAI_DEPLOYMENT               = "gpt-4o-mini"
+    AZURE_OPENAI_DEPLOYMENT               = "gpt-5-mini"
     BLOB_STORAGE_URL                      = module.storage.blob_service_url
     BLOB_CONTAINER_NAME                   = module.storage.container_name
     DATABASE_URL                          = "@Microsoft.KeyVault(SecretUri=${module.key_vault.vault_uri}secrets/database-url/)"

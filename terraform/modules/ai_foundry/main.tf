@@ -25,18 +25,18 @@ resource "azurerm_cognitive_account" "openai" {
   tags = local.tags
 }
 
-resource "azurerm_cognitive_deployment" "gpt4o_mini" {
-  name                 = "gpt-4o-mini"
+resource "azurerm_cognitive_deployment" "gpt5_mini" {
+  name                 = "gpt-5-mini"
   cognitive_account_id = azurerm_cognitive_account.openai.id
 
   model {
     format  = "OpenAI"
-    name    = "gpt-4o-mini"
-    version = "2024-07-18"
+    name    = "gpt-5-mini"
+    version = "2025-08-07"
   }
 
-  sku {
-    name     = "GlobalStandard"
+  scale {
+    type     = "GlobalStandard"
     capacity = 10  # TPM in thousands (10k TPM)
   }
 }

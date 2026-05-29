@@ -27,6 +27,10 @@ resource "azurerm_postgresql_flexible_server" "main" {
 
   # Public access with firewall — for private access add vnet_integration block
   tags = local.tags
+
+  lifecycle {
+    ignore_changes = [zone, high_availability]
+  }
 }
 
 # Allow Azure services (including App Service) to connect
