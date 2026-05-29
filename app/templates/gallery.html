@@ -18,11 +18,11 @@
       {% for photo in photos %}
       <article class="gallery-card animate-on-scroll">
         <div class="gallery-card-img-wrap">
-          <img src="{{ photo.blob_url }}"
+          <img src="{{ url_for('main.serve_photo', photo_id=photo.id) }}"
                alt="{{ photo.caption or 'Wedding photo ' ~ loop.index }}"
                loading="lazy"
                class="gallery-card-img"
-               data-lightbox="{{ photo.blob_url }}"
+               data-lightbox="{{ url_for('main.serve_photo', photo_id=photo.id) }}"
                data-caption="{{ photo.caption or '' }}" />
           <div class="gallery-card-overlay">
             <span class="gallery-card-num">{{ '%02d' % loop.index }}</span>

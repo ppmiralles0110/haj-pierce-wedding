@@ -100,7 +100,7 @@
       {% for photo in (preview_photos if preview_photos else sample_photos) %}
       <article class="gallery-card animate-on-scroll">
         <div class="gallery-card-img-wrap">
-          <img src="{{ photo.blob_url if photo is not mapping else photo.url }}"
+          <img src="{{ url_for('main.serve_photo', photo_id=photo.id) if photo is not mapping else photo.url }}"
                alt="{{ photo.caption if photo is not mapping else photo['caption'] }}"
                loading="lazy"
                class="gallery-card-img" />

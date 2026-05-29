@@ -108,6 +108,37 @@ def download_ics():
     )
 
 
+@main_bp.route("/photo/<uuid:photo_id>")
+@login_required
+def serve_photo(photo_id):
+    """Stream a private blob photo via managed identity — requires login."""
+    import re
+    from flask import abort
+    photo = Photo.query.get(str(photo_id))
+    if not photo:
+        abort(404)
+    try:
+        from azure.storage.blob import BlobServiceClient
+        from azure.identity import DefaultAzureCredential
+        match = re.match(
+            r'https://([^.]+)\.blob\.core\.windows\.net/([^/]+)/(.+)',
+            photo.blob_url
+        )
+        if not match:
+            abort(404)
+        account_name, container_name, blob_name = match.groups()
+        client = BlobServiceClient(
+            account_url=f"https://{account_name}.blob.core.windows.net",
+            credential=DefaultAzureCredential(),
+        )
+        blob = client.get_blob_client(container=container_name, blob=blob_name)
+        stream = blob.download_blob()
+        content_type = stream.properties.get("content_settings", {}).get("content_type") or "image/jpeg"
+        return Response(stream.readall(), content_type=content_type)
+    except Exception:
+        abort(404)
+
+
 @main_bp.route("/gallery")
 @login_required
 def gallery():

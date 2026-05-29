@@ -24,7 +24,7 @@
   <div class="admin-photo-grid">
     {% for photo in photos %}
     <div class="admin-photo-card">
-      <img src="{{ photo.blob_url }}" alt="{{ photo.caption or 'Wedding photo' }}"
+      <img src="{{ url_for('main.serve_photo', photo_id=photo.id) }}" alt="{{ photo.caption or 'Wedding photo' }}"
            loading="lazy" class="admin-photo-img" />
       <div class="admin-photo-actions">
         <input type="text" class="form-input form-input--small caption-input"
