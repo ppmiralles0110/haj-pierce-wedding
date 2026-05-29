@@ -90,8 +90,14 @@ variable "admin_emails" {
   sensitive   = true
 }
 
-variable "sendgrid_api_key" {
-  description = "SendGrid API key for OTP email delivery"
+variable "gmail_user" {
+  description = "Gmail address used to send OTP emails (e.g. yourname@gmail.com)"
+  type        = string
+  sensitive   = true
+}
+
+variable "gmail_app_password" {
+  description = "Gmail App Password for SMTP authentication (16-char, no spaces)"
   type        = string
   sensitive   = true
 }

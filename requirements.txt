@@ -24,7 +24,7 @@ azure-core==1.30.2
 openai==1.35.3
 
 # Email
-sendgrid==6.11.0
+# sendgrid removed — using Gmail SMTP (smtplib built-in)
 
 # Monitoring
 opencensus==0.11.4

@@ -73,15 +73,11 @@ class Config:
     BLOB_PHOTOS_CONTAINER: str = "photos"
 
     # ------------------------------------------------------------------
-    # SendGrid Email
+    # Gmail SMTP Email
     # ------------------------------------------------------------------
-    SENDGRID_API_KEY: Optional[str] = os.environ.get("SENDGRID_API_KEY")
-    SENDGRID_FROM_EMAIL: str = os.environ.get(
-        "SENDGRID_FROM_EMAIL", "noreply@wedding.example.com"
-    )
-    SENDGRID_FROM_NAME: str = os.environ.get(
-        "SENDGRID_FROM_NAME", "Our Wedding"
-    )
+    GMAIL_USER: str = os.environ.get("GMAIL_USER", "")
+    GMAIL_APP_PASSWORD: Optional[str] = os.environ.get("GMAIL_APP_PASSWORD")
+    MAIL_FROM_NAME: str = os.environ.get("MAIL_FROM_NAME", "Our Wedding")
 
     # ------------------------------------------------------------------
     # Azure Application Insights
@@ -131,7 +127,7 @@ class TestConfig(Config):
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     WTF_CSRF_ENABLED = False
     RATELIMIT_ENABLED = False         # Disable rate limiting in tests
-    SENDGRID_API_KEY = "test-key"     # Prevent real email sends
+    GMAIL_APP_PASSWORD = "test-key"   # Prevent real email sends
     AZURE_OPENAI_API_KEY = "test-key"
     ADMIN_EMAILS = ["admin@test.com"]
     SECRET_KEY = "test-secret-key-32-chars-minimum!!"

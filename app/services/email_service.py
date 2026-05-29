@@ -1,21 +1,30 @@
 # =============================================================================
-# app/services/email_service.py — SendGrid Email Delivery Service
+# app/services/email_service.py — Gmail SMTP Email Delivery Service
 # =============================================================================
 """
-Email delivery via the SendGrid free tier.
+Email delivery via Gmail SMTP with an App Password.
 
 Responsible for sending the OTP login email.  The HTML template is
 defined inline so the service is self-contained and easy to test.
+
+Setup (one-time):
+  1. Enable 2-Step Verification on your Google account.
+  2. Go to myaccount.google.com → Security → App passwords.
+  3. Create a new app password named "Wedding Site".
+  4. Set GMAIL_USER and GMAIL_APP_PASSWORD env vars (or Key Vault secrets).
 """
 
 import logging
-from typing import Optional
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from flask import current_app
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, HtmlContent
 
 logger = logging.getLogger(__name__)
+
+GMAIL_SMTP_HOST = "smtp.gmail.com"
+GMAIL_SMTP_PORT = 587
 
 
 class EmailServiceError(Exception):
@@ -36,40 +45,40 @@ def send_otp_email(to_email: str, otp_code: str, couple_names: str) -> bool:
         couple_names: Couple's names string used in the email subject/body.
 
     Returns:
-        True if the email was accepted by SendGrid (2xx status).
+        True on successful delivery.
 
     Raises:
-        EmailServiceError: If SendGrid returns an error or is misconfigured.
+        EmailServiceError: If Gmail SMTP returns an error or is misconfigured.
     """
-    api_key = current_app.config.get("SENDGRID_API_KEY")
-    from_email = current_app.config.get("SENDGRID_FROM_EMAIL")
-    from_name = current_app.config.get("SENDGRID_FROM_NAME", couple_names)
+    gmail_user = current_app.config.get("GMAIL_USER")
+    gmail_password = current_app.config.get("GMAIL_APP_PASSWORD")
+    from_name = current_app.config.get("MAIL_FROM_NAME", couple_names)
 
-    if not api_key:
-        raise EmailServiceError("SENDGRID_API_KEY is not configured.")
+    if not gmail_user or not gmail_password:
+        raise EmailServiceError("GMAIL_USER or GMAIL_APP_PASSWORD is not configured.")
 
     subject = f"Your login code for {couple_names}'s Wedding"
-
     html_content = _build_otp_html(otp_code=otp_code, couple_names=couple_names)
 
-    message = Mail(
-        from_email=(from_email, from_name),
-        to_emails=to_email,
-        subject=subject,
-        html_content=HtmlContent(html_content),
-    )
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = f"{from_name} <{gmail_user}>"
+    msg["To"] = to_email
+    msg.attach(MIMEText(html_content, "html"))
 
     try:
-        sg = SendGridAPIClient(api_key=api_key)
-        response = sg.send(message)
-        status = response.status_code
-        # Log without the OTP code
-        logger.info(
-            "OTP email sent to %s — SendGrid status %s (code masked)",
-            to_email,
-            status,
-        )
-        return 200 <= status < 300
+        with smtplib.SMTP(GMAIL_SMTP_HOST, GMAIL_SMTP_PORT) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(gmail_user, gmail_password)
+            server.sendmail(gmail_user, to_email, msg.as_string())
+        logger.info("OTP email sent to %s via Gmail SMTP (code masked)", to_email)
+        return True
+
+    except smtplib.SMTPAuthenticationError as exc:
+        logger.error("Gmail SMTP authentication failed: %s", exc)
+        raise EmailServiceError("Gmail authentication failed. Check GMAIL_USER and GMAIL_APP_PASSWORD.") from exc
 
     except Exception as exc:
         logger.error("Failed to send OTP email to %s: %s", to_email, exc)

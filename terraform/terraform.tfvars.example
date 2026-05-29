@@ -26,4 +26,8 @@ custom_domain = null
 
 # Sensitive values — store securely
 admin_emails     = "your@email.com,partner@email.com"  # EDIT THIS
-sendgrid_api_key = "SG.XXXXXXXXXXXXXXXXXXXX"             # EDIT THIS
+# Gmail SMTP — used to send OTP login codes to guests
+# 1. Enable 2-Step Verification at myaccount.google.com
+# 2. Security → App passwords → create "Wedding Site" → copy 16-char code
+gmail_user         = "yourname@gmail.com"     # EDIT THIS
+gmail_app_password = "xxxx xxxx xxxx xxxx"    # EDIT THIS (16-char App Password)

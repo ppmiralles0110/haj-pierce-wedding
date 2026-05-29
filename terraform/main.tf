@@ -96,7 +96,8 @@ module "app_service" {
     BLOB_STORAGE_URL                      = module.storage.blob_service_url
     BLOB_CONTAINER_NAME                   = module.storage.container_name
     DATABASE_URL                          = "@Microsoft.KeyVault(SecretUri=${module.key_vault.vault_uri}secrets/database-url/)"
-    SENDGRID_API_KEY                      = "@Microsoft.KeyVault(SecretUri=${module.key_vault.vault_uri}secrets/sendgrid-api-key/)"
+    GMAIL_USER                            = "@Microsoft.KeyVault(SecretUri=${module.key_vault.vault_uri}secrets/gmail-user/)"
+    GMAIL_APP_PASSWORD                    = "@Microsoft.KeyVault(SecretUri=${module.key_vault.vault_uri}secrets/gmail-app-password/)"
     ADMIN_EMAILS                          = "@Microsoft.KeyVault(SecretUri=${module.key_vault.vault_uri}secrets/admin-emails/)"
     SECRET_KEY                            = "@Microsoft.KeyVault(SecretUri=${module.key_vault.vault_uri}secrets/flask-secret-key/)"
     FLASK_ENV                             = var.environment == "prod" ? "production" : "development"
@@ -129,9 +130,16 @@ resource "azurerm_key_vault_secret" "database_url" {
   depends_on   = [module.key_vault, module.postgresql]
 }
 
-resource "azurerm_key_vault_secret" "sendgrid_api_key" {
-  name         = "sendgrid-api-key"
-  value        = var.sendgrid_api_key
+resource "azurerm_key_vault_secret" "gmail_user" {
+  name         = "gmail-user"
+  value        = var.gmail_user
+  key_vault_id = module.key_vault.vault_id
+  depends_on   = [module.key_vault]
+}
+
+resource "azurerm_key_vault_secret" "gmail_app_password" {
+  name         = "gmail-app-password"
+  value        = var.gmail_app_password
   key_vault_id = module.key_vault.vault_id
   depends_on   = [module.key_vault]
 }
