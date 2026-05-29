@@ -71,11 +71,6 @@ def rsvp():
             flash("Please select whether you will attend.", "error")
             return render_template("rsvp.html", guest=guest, prefill_name=prefill_name)
 
-        meal_preference = request.form.get("meal_preference", "").strip()
-        if rsvp_status == "attending" and not meal_preference:
-            flash("Please select a meal preference.", "error")
-            return render_template("rsvp.html", guest=guest, prefill_name=prefill_name)
-
         # Upsert the guest record
         if not guest:
             guest = Guest(email=email)
@@ -83,7 +78,6 @@ def rsvp():
 
         guest.name = name
         guest.rsvp_status = rsvp_status
-        guest.meal_preference = meal_preference if rsvp_status == "attending" else None
         guest.phone_number = phone_number
         guest.parking_required = parking_required if rsvp_status == "attending" else False
         guest.rsvp_submitted_at = datetime.now(timezone.utc)

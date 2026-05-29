@@ -99,7 +99,12 @@
     <div class="gallery-grid gallery-grid--4">
       {% for photo in (preview_photos if preview_photos else sample_photos) %}
       <article class="gallery-card animate-on-scroll">
-        <div class="gallery-card-img-wrap">
+        <div class="gallery-card-img-wrap"
+             data-lightbox="{{ url_for('main.serve_photo', photo_id=photo.id) if photo is not mapping else photo.url }}"
+             data-caption="{{ photo.caption if photo is not mapping else photo['caption'] }}"
+             role="button"
+             tabindex="0"
+             aria-label="View photo full size">
           <img src="{{ url_for('main.serve_photo', photo_id=photo.id) if photo is not mapping else photo.url }}"
                alt="{{ photo.caption if photo is not mapping else photo['caption'] }}"
                loading="lazy"
@@ -173,6 +178,18 @@
   </div>
 </section>
 <!-- ===== END GUESTBOOK TEASER ===== -->
+
+<!-- ===== LIGHTBOX ===== -->
+<div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Photo lightbox" hidden>
+  <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
+  <div class="lightbox-content">
+    <button class="lightbox-close" id="lightbox-close" aria-label="Close lightbox">&times;</button>
+    <button class="lightbox-prev" id="lightbox-prev" aria-label="Previous photo">&#8249;</button>
+    <button class="lightbox-next" id="lightbox-next" aria-label="Next photo">&#8250;</button>
+    <img src="" alt="" class="lightbox-img" id="lightbox-img" />
+    <p class="lightbox-caption" id="lightbox-caption"></p>
+  </div>
+</div>
 
 {% endblock %}
 

@@ -15,6 +15,7 @@ import logging
 from typing import Optional
 
 from flask import Flask, render_template, session
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from app.config import Config
 from app.extensions import db, migrate, limiter
@@ -46,6 +47,8 @@ def create_app(config_object: Optional[object] = None) -> Flask:
         template_folder="templates",
         static_folder="static",
     )
+    # Trust X-Forwarded-For from Azure's load balancer (1 proxy in front)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     # ------------------------------------------------------------------
     # 1. Load Configuration
