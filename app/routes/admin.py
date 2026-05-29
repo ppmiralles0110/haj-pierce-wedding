@@ -12,6 +12,7 @@ import logging
 
 from flask import (
     Blueprint,
+    current_app,
     flash,
     jsonify,
     redirect,
