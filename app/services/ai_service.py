@@ -86,6 +86,8 @@ def _build_system_prompt(wedding_config: dict) -> str:
     Returns:
         Multi-line system prompt string for the AI model.
     """
+    import urllib.parse
+
     couple1 = wedding_config.get("couple_name_1", "the couple")
     couple2 = wedding_config.get("couple_name_2", "their partner")
     date = wedding_config.get("wedding_date", "TBD")
@@ -97,6 +99,12 @@ def _build_system_prompt(wedding_config: dict) -> str:
     rsvp_deadline = wedding_config.get("rsvp_deadline", "TBD")
     hashtag = wedding_config.get("wedding_hashtag", "")
 
+    maps_url = (
+        f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote(address)}"
+        if address not in ("TBD", "", None) else ""
+    )
+    maps_line = f"- Google Maps link: {maps_url}" if maps_url else ""
+
     return f"""You are the warm, witty, and helpful AI wedding concierge for {couple1} and {couple2}'s wedding.
 
 WEDDING DETAILS:
@@ -107,6 +115,7 @@ WEDDING DETAILS:
 - Theme: {theme}
 - RSVP Deadline: {rsvp_deadline}
 - Wedding Hashtag: {hashtag}
+{maps_line}
 
 YOUR ROLE:
 You help guests with questions about the wedding — logistics, dress code, venue directions,
@@ -118,7 +127,12 @@ GUIDELINES:
 - Never invent details not provided above.
 - Keep answers concise but complete.
 - Use the wedding hashtag naturally in relevant answers.
-- If asked about the RSVP, remind them of the deadline and direct them to the RSVP page."""
+- If asked about the RSVP, remind them of the deadline and direct them to the RSVP page.
+- FOLLOW-THROUGH RULE: When you offer or mention something in a previous turn (such as
+  "I can give you the map link", "here's how to get there", "would you like directions?",
+  or any similar offer), and the user replies affirmatively ("yes", "sure", "please",
+  "okay", "go ahead", etc.) — immediately provide it in full. Do NOT ask again for
+  confirmation. Act on the 'yes' right away."""
 
 
 def chat_completion(

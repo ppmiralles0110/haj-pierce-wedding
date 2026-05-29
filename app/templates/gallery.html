@@ -17,13 +17,16 @@
     <div class="gallery-grid gallery-grid--4" id="gallery-grid">
       {% for photo in photos %}
       <article class="gallery-card animate-on-scroll">
-        <div class="gallery-card-img-wrap">
+        <div class="gallery-card-img-wrap"
+             data-lightbox="{{ url_for('main.serve_photo', photo_id=photo.id) }}"
+             data-caption="{{ photo.caption or '' }}"
+             role="button"
+             tabindex="0"
+             aria-label="View photo {{ loop.index }} full size">
           <img src="{{ url_for('main.serve_photo', photo_id=photo.id) }}"
                alt="{{ photo.caption or 'Wedding photo ' ~ loop.index }}"
                loading="lazy"
-               class="gallery-card-img"
-               data-lightbox="{{ url_for('main.serve_photo', photo_id=photo.id) }}"
-               data-caption="{{ photo.caption or '' }}" />
+               class="gallery-card-img" />
           <div class="gallery-card-overlay">
             <span class="gallery-card-num">{{ '%02d' % loop.index }}</span>
             {% if photo.caption %}
@@ -49,6 +52,8 @@
   <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
   <div class="lightbox-content">
     <button class="lightbox-close" id="lightbox-close" aria-label="Close lightbox">&times;</button>
+    <button class="lightbox-prev" id="lightbox-prev" aria-label="Previous photo">&#8249;</button>
+    <button class="lightbox-next" id="lightbox-next" aria-label="Next photo">&#8250;</button>
     <img src="" alt="" class="lightbox-img" id="lightbox-img" />
     <p class="lightbox-caption" id="lightbox-caption"></p>
   </div>

@@ -22,8 +22,11 @@
     cards = Array.from(document.querySelectorAll('[data-lightbox]'));
 
     cards.forEach((card, idx) => {
-      card.style.cursor = 'zoom-in';
       card.addEventListener('click', () => openLightbox(idx));
+      // Keyboard accessibility: Enter/Space on the wrapper
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(idx); }
+      });
     });
 
     // Close controls
@@ -31,6 +34,12 @@
       ?.addEventListener('click', closeLightbox);
     document.getElementById('lightbox-backdrop')
       ?.addEventListener('click', closeLightbox);
+
+    // Prev / Next buttons
+    document.getElementById('lightbox-prev')
+      ?.addEventListener('click', prevPhoto);
+    document.getElementById('lightbox-next')
+      ?.addEventListener('click', nextPhoto);
 
     // Keyboard navigation
     document.addEventListener('keydown', onKeyDown);
