@@ -179,12 +179,13 @@ body.has-hero .navbar:not(.navbar--scrolled) .nav-hamburger span { background: #
   text-transform: uppercase;
   letter-spacing: -3px;
   line-height: 0.88;
-  color: var(--color-text-primary);
+  color: #ffffff;
   margin: var(--space-md) 0;
 }
 .hero-title-amp { color: var(--color-primary); font-style: italic; }
-.hero-divider { width: 60px; height: 1px; background: var(--color-primary); margin: var(--space-lg) 0; }
-.hero-subtitle { font-size: 15px; color: var(--color-text-secondary); margin-bottom: var(--space-lg); line-height: 1.7; }
+.hero-content .eyebrow { color: rgba(255,255,255,0.75); }
+.hero-divider { width: 60px; height: 1px; background: rgba(255,255,255,0.6); margin: var(--space-lg) 0; }
+.hero-subtitle { font-size: 15px; color: rgba(255,255,255,0.85); margin-bottom: var(--space-lg); line-height: 1.7; }
 .hero-ctas { display: flex; gap: var(--space-md); flex-wrap: wrap; }
 
 .hero-slide-indicator {

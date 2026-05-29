@@ -21,7 +21,7 @@ azure-storage-blob==12.20.0
 azure-core==1.30.2
 
 # AI / OpenAI
-openai==1.35.3
+openai>=1.52.0
 
 # Email
 # sendgrid removed — using Gmail SMTP (smtplib built-in)
