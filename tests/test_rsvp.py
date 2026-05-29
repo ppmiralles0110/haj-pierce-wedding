@@ -15,7 +15,7 @@ def test_rsvp_page_renders(auth_client):
 
 def test_rsvp_submit_attending(auth_client, app):
     """POST /rsvp with valid attending data should save and redirect to success."""
-    with patch("app.routes.rsvp.generate_rsvp_confirmation", return_value="Welcome!"):
+    with patch("app.services.ai_service.generate_rsvp_confirmation", return_value="Welcome!"):
         resp = auth_client.post(
             "/rsvp",
             data={
@@ -34,7 +34,7 @@ def test_rsvp_submit_attending(auth_client, app):
 
 def test_rsvp_submit_not_attending(auth_client):
     """POST /rsvp declining attendance should be saved."""
-    with patch("app.routes.rsvp.generate_rsvp_confirmation", return_value="Thanks"):
+    with patch("app.services.ai_service.generate_rsvp_confirmation", return_value="Thanks"):
         resp = auth_client.post(
             "/rsvp",
             data={

@@ -18,7 +18,7 @@ def test_enhance_message_api_requires_auth(client):
 
 def test_enhance_message_api_authenticated(auth_client):
     """POST /api/enhance-message should call AI and return enhanced text."""
-    with patch("app.routes.api.ai_enhance", return_value="A beautifully poetic wish."):
+    with patch("app.services.ai_service.enhance_message", return_value="A beautifully poetic wish."):
         resp = auth_client.post(
             "/api/enhance-message",
             json={"message": "Congrats!"},

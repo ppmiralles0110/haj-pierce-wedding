@@ -35,7 +35,7 @@ def test_login_post_empty_email(client):
 
 def test_login_post_valid_email_sends_otp(client, app):
     """POST /login with valid email should send OTP and redirect to /verify."""
-    with patch("app.routes.auth.send_otp_email", return_value=True):
+    with patch("app.services.email_service.send_otp_email", return_value=True):
         resp = client.post(
             "/login",
             data={"email": "guest@example.com"},

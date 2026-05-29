@@ -84,7 +84,11 @@ class OtpToken(db.Model):
         Returns:
             True if the current UTC time is past ``expires_at``.
         """
-        return datetime.now(timezone.utc) > self.expires_at
+        expires = self.expires_at
+        # SQLite (used in tests) returns naive datetimes — treat as UTC
+        if expires.tzinfo is None:
+            expires = expires.replace(tzinfo=timezone.utc)
+        return datetime.now(timezone.utc) > expires
 
     @property
     def is_valid(self) -> bool:
