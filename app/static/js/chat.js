@@ -78,7 +78,11 @@
   function appendMessage(role, text) {
     const div = document.createElement('div');
     div.className = `chat-message chat-message--${role}`;
-    div.textContent = text;
+    if (role === 'bot') {
+      div.innerHTML = renderBotText(text);
+    } else {
+      div.textContent = text;
+    }
     messagesEl.appendChild(div);
     scrollToBottom();
     return div;
@@ -100,7 +104,29 @@
   }
 
   function scrollToBottom() {
-    messagesEl.scrollTop = messagesEl.scrollHeight;
+    requestAnimationFrame(() => {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    });
+  }
+
+  /**
+   * Safely render bot text — escapes HTML then converts bare URLs to clickable links.
+   *
+   * @param {string} text - Plain text from the AI.
+   * @returns {string} HTML string safe to set as innerHTML.
+   */
+  function renderBotText(text) {
+    // 1. Escape all HTML special chars
+    const escaped = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+    // 2. Replace bare URLs with clickable links
+    return escaped.replace(
+      /(https?:\/\/[^\s<>"]+)/g,
+      '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -171,13 +197,13 @@
 
             if (payload.token) {
               fullResponse += payload.token;
-              botEl.textContent = fullResponse;
+              botEl.innerHTML = renderBotText(fullResponse);
               scrollToBottom();
             }
 
             if (payload.done) {
               fullResponse = payload.full || fullResponse;
-              botEl.textContent = fullResponse;
+              botEl.innerHTML = renderBotText(fullResponse);
               scrollToBottom();
             }
           } catch {

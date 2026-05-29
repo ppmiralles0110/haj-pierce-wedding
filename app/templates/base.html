@@ -169,11 +169,25 @@
 
     // Mobile hamburger toggle
     const hamburger = document.getElementById('nav-hamburger');
+    const navbar    = document.getElementById('navbar');
     const navLinks  = document.getElementById('nav-links');
     hamburger.addEventListener('click', () => {
       const expanded = hamburger.getAttribute('aria-expanded') === 'true';
       hamburger.setAttribute('aria-expanded', String(!expanded));
       navLinks.classList.toggle('nav-links--open');
+      // Raise navbar stacking context so overlay covers chat widget & hero
+      navbar.classList.toggle('navbar--nav-open', !expanded);
+      // Prevent body scroll while nav is open
+      document.body.style.overflow = !expanded ? 'hidden' : '';
+    });
+    // Close nav on link click (single-page navigation)
+    navLinks.addEventListener('click', (e) => {
+      if (e.target.closest('a')) {
+        navLinks.classList.remove('nav-links--open');
+        navbar.classList.remove('navbar--nav-open');
+        hamburger.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+      }
     });
   </script>
 
