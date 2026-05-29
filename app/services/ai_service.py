@@ -154,7 +154,7 @@ def chat_completion(
         response = client.chat.completions.create(
             model=deployment,
             messages=all_messages,
-            max_tokens=500,
+            max_completion_tokens=500,
             temperature=0.7,
         )
         return response.choices[0].message.content or ""
@@ -194,7 +194,7 @@ def chat_stream(
         stream = client.chat.completions.create(
             model=deployment,
             messages=all_messages,
-            max_tokens=500,
+            max_completion_tokens=500,
             temperature=0.7,
             stream=True,
         )
@@ -244,7 +244,7 @@ def enhance_message(original: str) -> str:
         response = client.chat.completions.create(
             model=deployment,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=200,
+            max_completion_tokens=200,
             temperature=0.85,
         )
         return response.choices[0].message.content or original
@@ -296,7 +296,7 @@ def generate_rsvp_confirmation(
         response = client.chat.completions.create(
             model=deployment,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=150,
+            max_completion_tokens=150,
             temperature=0.7,
         )
         return response.choices[0].message.content or ""
@@ -331,7 +331,7 @@ def generate_photo_caption(photo_description: str) -> str:
         response = client.chat.completions.create(
             model=deployment,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=60,
+            max_completion_tokens=60,
             temperature=0.8,
         )
         return response.choices[0].message.content or ""
