@@ -3,22 +3,32 @@
  *
  * Shows a "still there?" warning at 4 minutes, then redirects to
  * /logout at 5 minutes if the user takes no action.
- * Any activity (mouse, keyboard, touch, scroll) resets the timer.
+ *
+ * Mobile-safe:
+ * - Tracks `lastActivity` timestamp so backgrounded/locked phones are
+ *   checked on `visibilitychange` (iOS pauses setTimeout when backgrounded).
+ * - Listens to `touchmove` (mobile scroll/drag) in addition to touch/click.
+ * - Uses explicit top/left/right/bottom for iOS Safari < 14.5 compatibility.
  */
 (function () {
   'use strict';
 
-  const WARN_MS   = 4 * 60 * 1000;  // show warning at 4 min
-  const LOGOUT_MS = 5 * 60 * 1000;  // logout at 5 min
+  const WARN_MS    = 4 * 60 * 1000;  // show warning at 4 min
+  const LOGOUT_MS  = 5 * 60 * 1000;  // logout at 5 min
   const LOGOUT_URL = '/logout';
 
-  const ACTIVITY_EVENTS = ['mousedown', 'mousemove', 'keydown', 'touchstart', 'click', 'scroll', 'wheel'];
+  // touchmove catches mobile scrolling; touchstart catches taps
+  const ACTIVITY_EVENTS = [
+    'mousedown', 'mousemove', 'keydown',
+    'touchstart', 'touchmove', 'click', 'scroll', 'wheel',
+  ];
 
-  let warnTimer   = null;
-  let logoutTimer = null;
-  let warningEl   = null;
+  let warnTimer        = null;
+  let logoutTimer      = null;
+  let warningEl        = null;
   let countdownInterval = null;
-  let secondsLeft = 60;
+  let secondsLeft      = 60;
+  let lastActivity     = Date.now();   // wall-clock timestamp of last activity
 
   // ---------------------------------------------------------------------------
   // Warning overlay
@@ -30,10 +40,12 @@
     el.setAttribute('role', 'alertdialog');
     el.setAttribute('aria-modal', 'true');
     el.setAttribute('aria-labelledby', 'idle-warning-title');
+    // Explicit positioning for older iOS Safari (no inset shorthand)
     el.style.cssText = [
       'display:none',
       'position:fixed',
-      'inset:0',
+      'top:0', 'left:0', 'right:0', 'bottom:0',
+      'width:100%', 'height:100%',
       'z-index:10000',
       'background:rgba(0,0,0,0.75)',
       'align-items:center',
@@ -107,16 +119,19 @@
   // Timer management
   // ---------------------------------------------------------------------------
 
-  function showWarning() {
+  function showWarning(remainingMs) {
     if (!warningEl) warningEl = buildWarning();
     warningEl.style.display = 'flex';
-    secondsLeft = 60;
-    document.getElementById('idle-countdown').textContent = secondsLeft;
+    // How many seconds until forced logout?
+    secondsLeft = Math.max(1, Math.ceil((remainingMs !== undefined ? remainingMs : LOGOUT_MS - WARN_MS) / 1000));
+    const cd = document.getElementById('idle-countdown');
+    if (cd) cd.textContent = secondsLeft;
 
+    clearInterval(countdownInterval);
     countdownInterval = setInterval(function () {
       secondsLeft -= 1;
-      const cd = document.getElementById('idle-countdown');
-      if (cd) cd.textContent = secondsLeft;
+      const el = document.getElementById('idle-countdown');
+      if (el) el.textContent = secondsLeft;
       if (secondsLeft <= 0) clearInterval(countdownInterval);
     }, 1000);
   }
@@ -131,13 +146,44 @@
   }
 
   function resetTimers() {
+    lastActivity = Date.now();
     clearTimeout(warnTimer);
     clearTimeout(logoutTimer);
     hideWarning();
 
-    warnTimer   = setTimeout(showWarning, WARN_MS);
-    logoutTimer = setTimeout(doLogout,    LOGOUT_MS);
+    warnTimer   = setTimeout(showWarning,  WARN_MS);
+    logoutTimer = setTimeout(doLogout,     LOGOUT_MS);
   }
+
+  // ---------------------------------------------------------------------------
+  // Visibility change — handles iOS backgrounding / phone lock
+  // iOS Safari pauses setTimeout when the tab is hidden. On return we
+  // check real elapsed wall-clock time and act accordingly.
+  // ---------------------------------------------------------------------------
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState !== 'visible') return;
+
+    const elapsed = Date.now() - lastActivity;
+
+    if (elapsed >= LOGOUT_MS) {
+      // Should have been logged out while backgrounded — do it now
+      doLogout();
+    } else if (elapsed >= WARN_MS) {
+      // Warning window has begun; show it with the corrected time remaining
+      clearTimeout(warnTimer);
+      clearTimeout(logoutTimer);
+      const remaining = LOGOUT_MS - elapsed;
+      showWarning(remaining);
+      logoutTimer = setTimeout(doLogout, remaining);
+    } else {
+      // Still in the clear — reschedule with accurate remaining times
+      clearTimeout(warnTimer);
+      clearTimeout(logoutTimer);
+      warnTimer   = setTimeout(showWarning, WARN_MS   - elapsed);
+      logoutTimer = setTimeout(doLogout,    LOGOUT_MS - elapsed);
+    }
+  });
 
   // ---------------------------------------------------------------------------
   // Bootstrap
@@ -156,3 +202,4 @@
     init();
   }
 }());
+
