@@ -125,6 +125,8 @@ class TestConfig(Config):
     TESTING = True
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    # SQLite doesn't support PostgreSQL pool options — clear them for tests
+    SQLALCHEMY_ENGINE_OPTIONS: dict = {}
     WTF_CSRF_ENABLED = False
     RATELIMIT_ENABLED = False         # Disable rate limiting in tests
     GMAIL_APP_PASSWORD = "test-key"   # Prevent real email sends
