@@ -173,8 +173,8 @@ def login():
             "name": request.form.get("geo_name") or None,
         }
 
-        # Dev mode: no SendGrid key — show OTP directly on the verify page
-        if not current_app.config.get("SENDGRID_API_KEY"):
+        # Dev mode: no Gmail credentials — show OTP directly on the verify page
+        if not current_app.config.get("GMAIL_APP_PASSWORD"):
             session["dev_otp"] = otp_code  # cleared after display
             flash(
                 "DEV MODE: Email sending is disabled. "
