@@ -32,7 +32,7 @@
       <div class="form-group">
         <label class="form-label eyebrow" for="name">Full Name *</label>
         <input class="form-input" type="text" id="name" name="name"
-               value="{{ guest.name or '' }}"
+               value="{{ prefill_name or (guest.name or '') }}"
                placeholder="Your full name" required maxlength="255"
                autocomplete="name" />
       </div>

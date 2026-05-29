@@ -26,6 +26,7 @@ from flask import (
 from app.extensions import db
 from app.models.ai_chat_log import AiChatLog
 from app.models.guest import Guest
+from app.models.invite_code import InviteCode, generate_invite_code
 from app.models.guestbook_message import GuestbookMessage
 from app.models.login_log import LoginLog
 from app.models.photo import Photo
@@ -264,3 +265,61 @@ def login_logs():
     """
     logs = LoginLog.query.order_by(LoginLog.logged_at.desc()).limit(200).all()
     return render_template("admin/login_logs.html", logs=logs)
+
+
+# ---------------------------------------------------------------------------
+# Invite Codes
+# ---------------------------------------------------------------------------
+
+@admin_bp.route("/invites")
+@admin_required
+def invites():
+    """List all invite codes."""
+    all_invites = InviteCode.query.order_by(InviteCode.created_at.desc()).all()
+    return render_template("admin/invites.html", invites=all_invites)
+
+
+@admin_bp.route("/invites/create", methods=["POST"])
+@admin_required
+def create_invite():
+    """Generate a new invite code for a guest label."""
+    label = request.form.get("label", "").strip()
+    if not label:
+        flash("Please enter a name or label for the invite.", "error")
+        return redirect(url_for("admin.invites"))
+
+    # Retry up to 5 times to get a unique code
+    for _ in range(5):
+        code = generate_invite_code()
+        if not InviteCode.query.filter_by(code=code).first():
+            break
+
+    invite = InviteCode(code=code, label=label)
+    db.session.add(invite)
+    db.session.commit()
+
+    flash(f"Invite code generated for \"{label}\": {code}", "invite_created")
+    return redirect(url_for("admin.invites"))
+
+
+@admin_bp.route("/invites/<int:invite_id>/toggle", methods=["POST"])
+@admin_required
+def toggle_invite(invite_id):
+    """Activate or deactivate an invite code."""
+    invite = InviteCode.query.get_or_404(invite_id)
+    invite.is_active = not invite.is_active
+    db.session.commit()
+    status = "activated" if invite.is_active else "deactivated"
+    flash(f"Invite code {invite.code} ({invite.label}) {status}.", "success")
+    return redirect(url_for("admin.invites"))
+
+
+@admin_bp.route("/invites/<int:invite_id>/delete", methods=["POST"])
+@admin_required
+def delete_invite(invite_id):
+    """Permanently delete an invite code."""
+    invite = InviteCode.query.get_or_404(invite_id)
+    db.session.delete(invite)
+    db.session.commit()
+    flash(f"Invite code {invite.code} ({invite.label}) deleted.", "success")
+    return redirect(url_for("admin.invites"))

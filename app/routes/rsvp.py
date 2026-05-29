@@ -45,6 +45,7 @@ def rsvp():
 
     email = session["user_email"]
     guest = Guest.query.filter_by(email=email).first()
+    prefill_name = session.get("user_full_name", "") or (guest.name if guest else "")
 
     if request.method == "POST":
         name = request.form.get("name", "").strip()
@@ -56,24 +57,24 @@ def rsvp():
         # Basic validation
         if not name:
             flash("Please enter your full name.", "error")
-            return render_template("rsvp.html", guest=guest)
+            return render_template("rsvp.html", guest=guest, prefill_name=prefill_name)
 
         if not email or "@" not in email or "." not in email.split("@")[-1]:
             flash("Please enter a valid email address.", "error")
-            return render_template("rsvp.html", guest=guest)
+            return render_template("rsvp.html", guest=guest, prefill_name=prefill_name)
 
         if phone_number and not re.match(r'^(09|\+639)[0-9]{9}$', phone_number):
             flash("Please enter a valid Philippine mobile number (09XXXXXXXXX or +639XXXXXXXXX).", "error")
-            return render_template("rsvp.html", guest=guest)
+            return render_template("rsvp.html", guest=guest, prefill_name=prefill_name)
 
         if rsvp_status not in ("attending", "not_attending"):
             flash("Please select whether you will attend.", "error")
-            return render_template("rsvp.html", guest=guest)
+            return render_template("rsvp.html", guest=guest, prefill_name=prefill_name)
 
         meal_preference = request.form.get("meal_preference", "").strip()
         if rsvp_status == "attending" and not meal_preference:
             flash("Please select a meal preference.", "error")
-            return render_template("rsvp.html", guest=guest)
+            return render_template("rsvp.html", guest=guest, prefill_name=prefill_name)
 
         # Upsert the guest record
         if not guest:
@@ -115,4 +116,4 @@ def rsvp():
             ai_message=ai_message,
         )
 
-    return render_template("rsvp.html", guest=guest)
+    return render_template("rsvp.html", guest=guest, prefill_name=prefill_name)

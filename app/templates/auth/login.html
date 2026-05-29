@@ -5,7 +5,6 @@
 <section class="auth-section" aria-label="Login">
   <div class="auth-card animate-on-scroll">
 
-    <!-- Brand header -->
     <div class="auth-brand">
       <p class="eyebrow">Welcome</p>
       <h1 class="auth-title">
@@ -14,104 +13,58 @@
         {{ wedding_config.get('couple_name_2', '') }} Wedding
       </h1>
       <div class="auth-divider" aria-hidden="true"></div>
-      <p class="auth-subtitle">Enter your email to receive a secure login code.</p>
+      <p class="auth-subtitle">Enter your details and the invite code from your invitation.</p>
     </div>
 
-    <!-- Login form -->
-    <form class="auth-form" method="POST" action="{{ url_for('auth.login') }}" novalidate id="login-form">
-      <!-- Hidden geolocation fields -->
-      <input type="hidden" name="geo_lat"  id="geo_lat"  value="" />
-      <input type="hidden" name="geo_lon"  id="geo_lon"  value="" />
-      <input type="hidden" name="geo_name" id="geo_name" value="" />
+    <form class="auth-form" method="POST" action="{{ url_for('auth.login') }}" novalidate>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label eyebrow" for="first_name">First Name</label>
+          <input class="form-input" type="text" id="first_name" name="first_name"
+                 placeholder="First name" required autocomplete="given-name"
+                 autofocus maxlength="100" />
+        </div>
+        <div class="form-group">
+          <label class="form-label eyebrow" for="last_name">Last Name</label>
+          <input class="form-input" type="text" id="last_name" name="last_name"
+                 placeholder="Last name" required autocomplete="family-name"
+                 maxlength="100" />
+        </div>
+      </div>
+
       <div class="form-group">
         <label class="form-label eyebrow" for="email">Email Address</label>
-        <input
-          class="form-input"
-          type="email"
-          id="email"
-          name="email"
-          placeholder="your@email.com"
-          required
-          autocomplete="email"
-          autofocus
-          maxlength="255"
-        />
+        <input class="form-input" type="email" id="email" name="email"
+               placeholder="your@email.com" required autocomplete="email"
+               maxlength="255" />
       </div>
-      <div class="form-group">
-        <button type="submit" class="btn btn--primary btn--full">
-          Send Login Code &rarr;
-        </button>
-      </div>
-      <p class="auth-note">
-        We'll email you a 6-digit code. No password required.
-      </p>
-    </form>
 
+      <div class="form-group">
+        <label class="form-label eyebrow" for="invite_code">Invite Code</label>
+        <input class="form-input form-input--code" type="text" id="invite_code"
+               name="invite_code" placeholder="XXXXXXXX" required
+               maxlength="8" autocomplete="off" autocorrect="off"
+               autocapitalize="characters" spellcheck="false"
+               style="letter-spacing:0.25em;text-transform:uppercase;font-size:1.1rem;" />
+        <p class="form-hint">The 8-character code included in your invitation.</p>
+      </div>
+
+      <div class="form-group">
+        <button type="submit" class="btn btn--primary btn--full">Enter &rarr;</button>
+      </div>
+
+    </form>
   </div>
 </section>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-(function () {
-  const form = document.getElementById('login-form');
-  let geoReady = false;
-
-  function submitForm() {
-    // Remove our interceptor before submitting
-    form.removeEventListener('submit', onSubmit);
-    form.submit();
-  }
-
-  function onSubmit(e) {
-    if (geoReady) return;  // already resolved — let it go
-    e.preventDefault();
-
-    // Give geolocation / Nominatim up to 6 s to respond
-    const deadline = setTimeout(submitForm, 6000);
-
-    if (!navigator.geolocation) {
-      clearTimeout(deadline);
-      submitForm();
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        document.getElementById('geo_lat').value = lat;
-        document.getElementById('geo_lon').value = lon;
-
-        fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`,
-          { headers: { 'Accept-Language': 'en' } }
-        )
-        .then(r => r.json())
-        .then(data => {
-          const addr = data.address || {};
-          const parts = [addr.city || addr.town || addr.village, addr.state, addr.country]
-            .filter(Boolean);
-          document.getElementById('geo_name').value = parts.join(', ');
-        })
-        .catch(() => {})
-        .finally(() => {
-          clearTimeout(deadline);
-          geoReady = true;
-          submitForm();
-        });
-      },
-      () => {
-        // Permission denied or unavailable
-        clearTimeout(deadline);
-        geoReady = true;
-        submitForm();
-      },
-      { timeout: 5000 }
-    );
-  }
-
-  form.addEventListener('submit', onSubmit);
-})();
+  document.getElementById('invite_code').addEventListener('input', function () {
+    const pos = this.selectionStart;
+    this.value = this.value.toUpperCase();
+    this.setSelectionRange(pos, pos);
+  });
 </script>
 {% endblock %}

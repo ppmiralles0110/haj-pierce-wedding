@@ -26,6 +26,7 @@
         <div class="form-group">
           <label class="form-label eyebrow" for="gb-name">Your Name</label>
           <input class="form-input" type="text" id="gb-name" name="name"
+                 value="{{ session.get('user_full_name', '') }}"
                  placeholder="Full name" required maxlength="255"
                  autocomplete="name" />
         </div>

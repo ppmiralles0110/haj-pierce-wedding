@@ -1,0 +1,102 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Invites{% endblock %}
+{% block page_title %}Invite Codes{% endblock %}
+
+{% block content %}
+
+<!-- ── Generated-code banner ── -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    {% if category == 'invite_created' %}
+      <div class="admin-card" style="border-left:4px solid var(--color-primary);margin-bottom:1.5rem;">
+        <p style="margin:0 0 0.25rem;font-size:0.75rem;text-transform:uppercase;letter-spacing:.08em;opacity:.6;">New Invite Code Created</p>
+        <p style="margin:0;font-size:1rem;">{{ message }}</p>
+        <p style="margin:.5rem 0 0;font-size:1.5rem;font-weight:700;letter-spacing:.25em;font-family:monospace;"
+           id="new-code">{{ message.split(': ')[-1] }}</p>
+        <button class="btn btn--sm btn--outline" style="margin-top:.5rem;"
+                onclick="navigator.clipboard.writeText(document.getElementById('new-code').textContent)">
+          Copy Code
+        </button>
+      </div>
+    {% endif %}
+  {% endfor %}
+{% endwith %}
+
+<!-- ── Create invite ── -->
+<div class="admin-card" style="margin-bottom:1.5rem;">
+  <h2 class="admin-section-title" style="margin-top:0;">Add New Invite</h2>
+  <form method="POST" action="{{ url_for('admin.create_invite') }}" class="admin-form-inline">
+    <input
+      type="text"
+      name="label"
+      class="admin-input"
+      placeholder="Guest name or label (e.g. Smith Family)"
+      required
+      maxlength="200"
+      style="flex:1;min-width:200px;"
+    />
+    <button type="submit" class="btn btn--primary">Generate Code</button>
+  </form>
+</div>
+
+<!-- ── Invite code table ── -->
+<div class="admin-card">
+  <h2 class="admin-section-title" style="margin-top:0;">All Invite Codes ({{ invites|length }})</h2>
+  {% if invites %}
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Guest / Label</th>
+          <th>Status</th>
+          <th>Uses</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inv in invites %}
+        <tr>
+          <td>
+            <span style="font-family:monospace;font-size:1rem;letter-spacing:.2em;font-weight:600;">
+              {{ inv.code }}
+            </span>
+            <button class="btn btn--xs btn--ghost"
+                    title="Copy code"
+                    onclick="navigator.clipboard.writeText('{{ inv.code }}');this.textContent='Copied!'">
+              Copy
+            </button>
+          </td>
+          <td>{{ inv.label }}</td>
+          <td>
+            {% if inv.is_active %}
+              <span class="badge badge--green">Active</span>
+            {% else %}
+              <span class="badge badge--red">Inactive</span>
+            {% endif %}
+          </td>
+          <td>{{ inv.use_count }}</td>
+          <td>{{ inv.created_at.strftime('%b %d, %Y') }}</td>
+          <td class="admin-actions">
+            <form method="POST" action="{{ url_for('admin.toggle_invite', invite_id=inv.id) }}" style="display:inline;">
+              <button type="submit" class="btn btn--xs btn--outline">
+                {{ 'Deactivate' if inv.is_active else 'Activate' }}
+              </button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.delete_invite', invite_id=inv.id) }}" style="display:inline;"
+                  onsubmit="return confirm('Delete invite code {{ inv.code }} for {{ inv.label }}? This cannot be undone.');">
+              <button type="submit" class="btn btn--xs btn--danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p style="opacity:.6;">No invite codes yet. Use the form above to generate the first one.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

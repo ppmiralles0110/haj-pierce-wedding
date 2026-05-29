@@ -361,6 +361,9 @@ body.has-hero .navbar:not(.navbar--scrolled) .nav-hamburger span { background: #
 .rsvp-form { background: var(--color-bg-card); border: 1px solid rgba(0,0,0,0.09); border-radius: var(--radius-md); padding: var(--space-xl) 48px; }
 
 .form-group { margin-bottom: var(--space-lg); }
+.form-row { display: flex; gap: var(--space-md); }
+.form-row .form-group { flex: 1; }
+.form-hint { font-size: 0.78rem; opacity: 0.6; margin-top: 0.25rem; }
 .form-label { display: block; margin-bottom: var(--space-sm); }
 .form-input {
   width: 100%;

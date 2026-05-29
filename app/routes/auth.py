@@ -1,21 +1,17 @@
 # =============================================================================
-# app/routes/auth.py — Authentication Blueprint (Email OTP)
+# app/routes/auth.py — Authentication Blueprint (Invite Code)
 # =============================================================================
 """
-Authentication routes: login (request OTP) and verify (submit OTP).
+Authentication routes: login with email + first/last name + 8-character invite code.
 
 Security measures:
-- Rate limited to 5 requests per 10 minutes per IP on /login
-- OTP is hashed before storage (SHA-256)
-- Previous unused OTPs are invalidated when a new one is requested
-- Session is regenerated on successful login to prevent fixation
+- Rate limited to 50 requests per 10 minutes per IP on /login
+- Invite codes validated against the invite_codes table (must be active)
+- Session regenerated on successful login to prevent session fixation
 - Admin flag set in session based on ADMIN_EMAILS config
 """
 
-import hashlib
 import logging
-import secrets
-from datetime import datetime, timedelta, timezone
 from functools import wraps
 from typing import Callable
 
@@ -32,11 +28,10 @@ from flask import (
 
 from app.extensions import db, limiter
 from app.models.guest import Guest
-from app.models.otp_token import OtpToken
+from app.models.invite_code import InviteCode
 
 logger = logging.getLogger(__name__)
 
-# Blueprint registration
 auth_bp = Blueprint("auth", __name__)
 
 
@@ -45,15 +40,6 @@ auth_bp = Blueprint("auth", __name__)
 # ---------------------------------------------------------------------------
 
 def login_required(f: Callable) -> Callable:
-    """
-    Decorator: redirect unauthenticated users to /login.
-
-    Args:
-        f: The view function to protect.
-
-    Returns:
-        Wrapped function that checks session authentication.
-    """
     @wraps(f)
     def decorated(*args, **kwargs):
         if not session.get("authenticated"):
@@ -64,17 +50,6 @@ def login_required(f: Callable) -> Callable:
 
 
 def admin_required(f: Callable) -> Callable:
-    """
-    Decorator: restrict access to admin users only.
-
-    Admin status is determined by ADMIN_EMAILS in config, set during login.
-
-    Args:
-        f: The view function to protect.
-
-    Returns:
-        Wrapped function that checks admin flag in session.
-    """
     @wraps(f)
     def decorated(*args, **kwargs):
         if not session.get("authenticated"):
@@ -88,212 +63,81 @@ def admin_required(f: Callable) -> Callable:
 
 
 # ---------------------------------------------------------------------------
-# Helper functions
-# ---------------------------------------------------------------------------
-
-def _hash_otp(otp: str) -> str:
-    """
-    Hash a plaintext OTP using SHA-256.
-
-    Args:
-        otp: The 6-digit plaintext OTP string.
-
-    Returns:
-        Hex-encoded SHA-256 digest of the OTP.
-    """
-    return hashlib.sha256(otp.encode("utf-8")).hexdigest()
-
-
-def _invalidate_previous_otps(email: str) -> None:
-    """
-    Mark all unused OTPs for this email as used.
-
-    Called before issuing a new OTP to prevent replay attacks.
-
-    Args:
-        email: The guest's email address.
-    """
-    OtpToken.query.filter_by(email=email, used=False).update({"used": True})
-    db.session.commit()
-
-
-# ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 @limiter.limit("50 per 10 minutes")
 def login():
-    """
-    Step 1 of OTP login: collect email address and send OTP.
-
-    GET:  Render the login form.
-    POST: Validate email, generate OTP, send via SendGrid, redirect to /verify.
-    """
     if session.get("authenticated"):
         return redirect(url_for("main.home"))
 
     if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
+        email      = request.form.get("email", "").strip().lower()
+        first_name = request.form.get("first_name", "").strip()
+        last_name  = request.form.get("last_name", "").strip()
+        code       = request.form.get("invite_code", "").strip().upper()
 
+        # --- Input validation ---
         if not email or "@" not in email:
             flash("Please enter a valid email address.", "error")
             return render_template("auth/login.html")
 
-        # Invalidate any previous unused OTPs for this email
-        _invalidate_previous_otps(email)
-
-        # Generate a cryptographically secure 6-digit OTP
-        otp_code = str(secrets.randbelow(900000) + 100000)  # 100000–999999
-
-        # Hash and store the OTP (never log or store plaintext)
-        expiry = datetime.now(timezone.utc) + timedelta(
-            minutes=current_app.config.get("OTP_EXPIRY_MINUTES", 10)
-        )
-        token = OtpToken(
-            email=email,
-            otp_hash=_hash_otp(otp_code),
-            expires_at=expiry,
-        )
-        db.session.add(token)
-        db.session.commit()
-
-        # Ensure the guest exists in the guests table
-        guest = Guest.query.filter_by(email=email).first()
-        if not guest:
-            guest = Guest(email=email)
-            db.session.add(guest)
-            db.session.commit()
-
-        # Store email + location in session for the verify step
-        session["pending_email"] = email
-        session["login_location"] = {
-            "lat":  request.form.get("geo_lat") or None,
-            "lon":  request.form.get("geo_lon") or None,
-            "name": request.form.get("geo_name") or None,
-        }
-
-        # Dev mode: no Gmail credentials — show OTP directly on the verify page
-        if not current_app.config.get("GMAIL_APP_PASSWORD"):
-            session["dev_otp"] = otp_code  # cleared after display
-            flash(
-                "DEV MODE: Email sending is disabled. "
-                "Your one-time code is shown below.",
-                "warning",
-            )
-            return redirect(url_for("auth.verify"))
-
-        # Send OTP via SendGrid
-        try:
-            from app.services.email_service import send_otp_email
-            from app.models.wedding_config import WeddingConfig
-            couple1 = WeddingConfig.get("couple_name_1", "Pierce")
-            couple2 = WeddingConfig.get("couple_name_2", "")
-            couple_names = f"{couple1} & {couple2}".strip(" &")
-            send_otp_email(
-                to_email=email,
-                otp_code=otp_code,  # Plaintext to email; NEVER log
-                couple_names=couple_names,
-            )
-            flash(
-                "We've sent a 6-digit code to your email. "
-                "Check your inbox (and spam folder).",
-                "success",
-            )
-            return redirect(url_for("auth.verify"))
-
-        except Exception as exc:
-            logger.error("Failed to send OTP to %s: %s", email, exc)
-            flash(
-                "We couldn't send the login email. Please try again shortly.",
-                "error",
-            )
-            # Clean up the token we just created
-            db.session.delete(token)
-            db.session.commit()
-            session.pop("pending_email", None)
+        if not first_name:
+            flash("Please enter your first name.", "error")
             return render_template("auth/login.html")
 
-    return render_template("auth/login.html")
+        if not last_name:
+            flash("Please enter your last name.", "error")
+            return render_template("auth/login.html")
 
+        if not code or len(code) != 8:
+            flash("Please enter the 8-character invite code from your invitation.", "error")
+            return render_template("auth/login.html")
 
-@auth_bp.route("/verify", methods=["GET", "POST"])
-@limiter.limit("50 per 10 minutes")
-def verify():
-    """
-    Step 2 of OTP login: validate the submitted code.
-
-    GET:  Render the verification form.
-    POST: Check OTP hash, mark used, create session, redirect to home.
-    """
-    pending_email = session.get("pending_email")
-    if not pending_email:
-        flash("Please enter your email address first.", "info")
-        return redirect(url_for("auth.login"))
-
-    # Dev mode: pop the OTP from session so it can be shown once
-    dev_otp = session.pop("dev_otp", None)
-
-    if request.method == "POST":
-        submitted_code = request.form.get("otp", "").strip()
-
-        if not submitted_code or len(submitted_code) != 6 or not submitted_code.isdigit():
-            flash("Please enter the 6-digit code from your email.", "error")
-            return render_template("auth/verify.html", email=pending_email)
-
-        # Look up the most recent valid OTP for this email
-        token = (
-            OtpToken.query
-            .filter_by(email=pending_email, used=False)
-            .order_by(OtpToken.created_at.desc())
-            .first()
-        )
-
-        if not token or not token.is_valid:
+        # --- Validate invite code ---
+        invite = InviteCode.query.filter_by(code=code, is_active=True).first()
+        if not invite:
             flash(
-                "This code has expired or already been used. "
-                "Please request a new code.",
+                "Invalid or inactive invite code. "
+                "Please double-check the code provided in your invitation.",
                 "error",
             )
-            session.pop("pending_email", None)
-            return redirect(url_for("auth.login"))
+            return render_template("auth/login.html")
 
-        # Constant-time comparison to prevent timing attacks
-        if not secrets.compare_digest(token.otp_hash, _hash_otp(submitted_code)):
-            flash("Invalid code. Please check your email and try again.", "error")
-            return render_template("auth/verify.html", email=pending_email)
+        # --- Upsert guest record ---
+        full_name = f"{first_name} {last_name}"
+        guest = Guest.query.filter_by(email=email).first()
+        if not guest:
+            guest = Guest(email=email, name=full_name)
+            db.session.add(guest)
+        elif not guest.name:
+            guest.name = full_name
 
-        # Mark token as used
-        token.used = True
+        # Track usage
+        invite.use_count += 1
         db.session.commit()
 
-        # Read location before session.clear() wipes it
-        login_location = session.get("login_location") or {}
-
-        # Establish authenticated session
-        session.clear()  # Regenerate to prevent session fixation
-        admin_emails = [
-            e.lower() for e in current_app.config.get("ADMIN_EMAILS", [])
-        ]
-        session["authenticated"] = True
-        session["user_email"] = pending_email
-        session["is_admin"] = pending_email.lower() in admin_emails
+        # --- Build session (clear first to prevent fixation) ---
+        session.clear()
+        admin_emails = [e.lower() for e in current_app.config.get("ADMIN_EMAILS", [])]
+        session["authenticated"]    = True
+        session["user_email"]       = email
+        session["user_first_name"]  = first_name
+        session["user_last_name"]   = last_name
+        session["user_full_name"]   = full_name
+        session["is_admin"]         = email.lower() in admin_emails
         session.permanent = True
 
-        # Save login log with location (passed through session from login step)
+        # --- Log the login ---
         try:
             from app.models.login_log import LoginLog
-            def _to_float(v):
-                try:
-                    return float(v) if v is not None else None
-                except (ValueError, TypeError):
-                    return None
             log = LoginLog(
-                email=pending_email,
+                email=email,
+                guest_name=full_name,
+                invite_code=code,
+                invite_label=invite.label,
                 ip_address=request.remote_addr,
-                location_name=login_location.get("name"),
-                latitude=_to_float(login_location.get("lat")),
-                longitude=_to_float(login_location.get("lon")),
             )
             db.session.add(log)
             db.session.commit()
@@ -301,23 +145,21 @@ def verify():
             logger.warning("Could not save login log: %s", exc)
 
         logger.info(
-            "Successful login for %s (admin=%s) from %s",
-            pending_email,
+            "Successful login for %s (admin=%s) from %s using code %s",
+            email,
             session["is_admin"],
             request.remote_addr,
+            code,
         )
 
-        flash("Welcome! You're now logged in.", "success")
+        flash(f"Welcome, {first_name}! You're now logged in.", "success")
         return redirect(url_for("main.home"))
 
-    return render_template("auth/verify.html", email=pending_email, dev_otp=dev_otp)
+    return render_template("auth/login.html")
 
 
 @auth_bp.route("/logout")
 def logout():
-    """
-    Clear the user's session and redirect to /login.
-    """
     email = session.get("user_email", "unknown")
     session.clear()
     logger.info("User logged out: %s", email)
