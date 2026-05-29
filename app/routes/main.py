@@ -108,6 +108,41 @@ def download_ics():
     )
 
 
+@main_bp.route("/photo/config/<config_key>")
+@login_required
+def serve_config_image(config_key):
+    """Stream a private blob config image (hero, dress-code) via managed identity."""
+    import re
+    from flask import abort
+    from app.models.wedding_config import WeddingConfig
+    allowed_keys = {"hero_image_url", "dress_code_men_photo", "dress_code_women_photo"}
+    if config_key not in allowed_keys:
+        abort(404)
+    blob_url = WeddingConfig.get(config_key)
+    if not blob_url or "blob.core.windows.net" not in blob_url:
+        abort(404)
+    try:
+        from azure.storage.blob import BlobServiceClient
+        from azure.identity import DefaultAzureCredential
+        match = re.match(
+            r'https://([^.]+)\.blob\.core\.windows\.net/([^/]+)/(.+)',
+            blob_url
+        )
+        if not match:
+            abort(404)
+        account_name, container_name, blob_name = match.groups()
+        client = BlobServiceClient(
+            account_url=f"https://{account_name}.blob.core.windows.net",
+            credential=DefaultAzureCredential(),
+        )
+        blob = client.get_blob_client(container=container_name, blob=blob_name)
+        stream = blob.download_blob()
+        content_type = stream.properties.get("content_settings", {}).get("content_type") or "image/jpeg"
+        return Response(stream.readall(), content_type=content_type)
+    except Exception:
+        abort(404)
+
+
 @main_bp.route("/photo/<uuid:photo_id>")
 @login_required
 def serve_photo(photo_id):

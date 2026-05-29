@@ -37,19 +37,29 @@ def _get_client() -> AzureOpenAI:
         AIServiceError: If the endpoint or API key is not configured.
     """
     endpoint = current_app.config.get("AZURE_OPENAI_ENDPOINT")
-    api_key = current_app.config.get("AZURE_OPENAI_API_KEY")
+    if not endpoint:
+        raise AIServiceError("AZURE_OPENAI_ENDPOINT must be set.")
 
-    if not endpoint or not api_key:
-        raise AIServiceError(
-            "AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_API_KEY must be set."
+    api_key = current_app.config.get("AZURE_OPENAI_API_KEY")
+    api_version = current_app.config.get("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+
+    if api_key:
+        return AzureOpenAI(
+            azure_endpoint=endpoint,
+            api_key=api_key,
+            api_version=api_version,
         )
 
+    # No API key — use Managed Identity (Cognitive Services OpenAI User role assigned)
+    from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+    token_provider = get_bearer_token_provider(
+        DefaultAzureCredential(),
+        "https://cognitiveservices.azure.com/.default",
+    )
     return AzureOpenAI(
         azure_endpoint=endpoint,
-        api_key=api_key,
-        api_version=current_app.config.get(
-            "AZURE_OPENAI_API_VERSION", "2024-02-15-preview"
-        ),
+        azure_ad_token_provider=token_provider,
+        api_version=api_version,
     )
 
 

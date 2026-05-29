@@ -126,7 +126,7 @@
         <div class="dress-code-photo-card">
           <div class="dress-code-photo-wrap">
             <img
-              src="{{ wedding_config.get('dress_code_men_photo', 'https://picsum.photos/seed/menattire/400/560') }}"
+              src="{% if wedding_config.get('dress_code_men_photo') %}{{ url_for('main.serve_config_image', config_key='dress_code_men_photo') }}{% else %}https://picsum.photos/seed/menattire/400/560{% endif %}"
               alt="Men's attire example"
               class="dress-code-photo"
               loading="lazy"
@@ -138,7 +138,7 @@
         <div class="dress-code-photo-card">
           <div class="dress-code-photo-wrap">
             <img
-              src="{{ wedding_config.get('dress_code_women_photo', 'https://picsum.photos/seed/womenattire/400/560') }}"
+              src="{% if wedding_config.get('dress_code_women_photo') %}{{ url_for('main.serve_config_image', config_key='dress_code_women_photo') }}{% else %}https://picsum.photos/seed/womenattire/400/560{% endif %}"
               alt="Women's attire example"
               class="dress-code-photo"
               loading="lazy"

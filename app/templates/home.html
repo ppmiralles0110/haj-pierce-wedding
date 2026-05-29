@@ -8,7 +8,7 @@
 <section class="hero" id="hero" aria-label="Hero">
   <!-- Background image with Ken Burns animation -->
   <div class="hero-bg"
-       style="background-image: url('{{ wedding_config.get('hero_image_url', '/static/images/placeholder.jpg') }}');"
+       style="background-image: url('{% if wedding_config.get('hero_image_url') %}{{ url_for('main.serve_config_image', config_key='hero_image_url') }}{% else %}/static/images/placeholder.jpg{% endif %}');"
        role="img" aria-label="Wedding couple photograph"></div>
   <!-- Dark overlay -->
   <div class="hero-overlay"></div>
@@ -124,7 +124,7 @@
 
 <!-- ===== CINEMATIC CTA SECTION ===== -->
 <section class="cta-section" aria-label="RSVP call to action"
-         style="background-image: url('{{ wedding_config.get('hero_image_url', '/static/images/placeholder.jpg') }}');">
+         style="background-image: url('{% if wedding_config.get('hero_image_url') %}{{ url_for('main.serve_config_image', config_key='hero_image_url') }}{% else %}/static/images/placeholder.jpg{% endif %}');">
   <div class="cta-overlay"></div>
   <div class="cta-content animate-on-scroll">
     <p class="eyebrow">Join Us</p>
