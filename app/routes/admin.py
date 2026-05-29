@@ -323,3 +323,38 @@ def delete_invite(invite_id):
     db.session.commit()
     flash(f"Invite code {invite.code} ({invite.label}) deleted.", "success")
     return redirect(url_for("admin.invites"))
+
+
+# ---------------------------------------------------------------------------
+# One-time admin bootstrap (self-disables once any invite code exists)
+# ---------------------------------------------------------------------------
+
+@admin_bp.route("/bootstrap-first-code")
+def bootstrap_first_code():
+    """
+    Creates the very first admin invite code so the admin can log in.
+    SELF-DISABLING: returns 404 once any invite code exists in the database.
+    Safe to leave deployed — it cannot be used to create codes after initial setup.
+    """
+    if InviteCode.query.count() > 0:
+        from flask import abort
+        abort(404)
+
+    code = generate_invite_code()
+    invite = InviteCode(code=code, label="Admin")
+    db.session.add(invite)
+    db.session.commit()
+
+    from flask import make_response
+    html = f"""<!doctype html>
+<html><head><title>Admin Bootstrap</title>
+<style>body{{font-family:monospace;padding:2rem;background:#111;color:#eee;}}
+.code{{font-size:2rem;letter-spacing:.3em;background:#222;padding:1rem 2rem;border-radius:4px;display:inline-block;margin:1rem 0;}}
+</style></head><body>
+<h2>Admin Invite Code Created</h2>
+<p>Use this code to log in for the first time:</p>
+<div class="code">{code}</div>
+<p style="opacity:.6;font-size:.85rem;">This page will return 404 on all future visits.</p>
+<p><a href="/login" style="color:#adf;">Go to Login &rarr;</a></p>
+</body></html>"""
+    return make_response(html, 200)
