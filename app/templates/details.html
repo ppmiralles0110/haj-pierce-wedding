@@ -122,31 +122,43 @@
       <p class="eyebrow">Dress Code</p>
       <h2 class="details-card-title">{{ wedding_config.get('dress_code', 'TBD') }}</h2>
       <p class="details-card-text">{{ wedding_config.get('theme_description', '') }}</p>
-      <div class="dress-code-photos">
-        <div class="dress-code-photo-card">
-          <div class="dress-code-photo-wrap">
-            <img
-              src="{% if wedding_config.get('dress_code_men_photo') %}{{ url_for('main.serve_config_image', config_key='dress_code_men_photo') }}{% else %}https://picsum.photos/seed/menattire/400/560{% endif %}"
-              alt="Men's attire example"
-              class="dress-code-photo"
-              loading="lazy"
-              onerror="this.src='https://picsum.photos/seed/menattire/400/560'"
-            />
+      <div class="dress-code-groups">
+        {% for group, label, seed in [('men', 'For Him', 'menattire'), ('women', 'For Her', 'womenattire')] %}
+        <div class="dress-code-group">
+          <p class="dress-code-group-label">{{ label }}</p>
+          <div class="dress-code-photos">
+            {% set keys = dress_code_photos.get(group, []) %}
+            {% if keys %}
+              {% for key in keys %}
+              <div class="dress-code-photo-card">
+                <div class="dress-code-photo-wrap">
+                  <img
+                    src="{{ url_for('main.serve_config_image', config_key=key) }}"
+                    alt="{{ label }} attire reference {{ loop.index }}"
+                    class="dress-code-photo"
+                    loading="lazy"
+                    onerror="this.src='https://picsum.photos/seed/{{ seed }}{{ loop.index }}/400/560'"
+                  />
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              {% for i in range(1, 5) %}
+              <div class="dress-code-photo-card">
+                <div class="dress-code-photo-wrap">
+                  <img
+                    src="https://picsum.photos/seed/{{ seed }}{{ i }}/400/560"
+                    alt="{{ label }} attire reference {{ i }}"
+                    class="dress-code-photo"
+                    loading="lazy"
+                  />
+                </div>
+              </div>
+              {% endfor %}
+            {% endif %}
           </div>
-          <p class="dress-code-photo-label">For Him</p>
         </div>
-        <div class="dress-code-photo-card">
-          <div class="dress-code-photo-wrap">
-            <img
-              src="{% if wedding_config.get('dress_code_women_photo') %}{{ url_for('main.serve_config_image', config_key='dress_code_women_photo') }}{% else %}https://picsum.photos/seed/womenattire/400/560{% endif %}"
-              alt="Women's attire example"
-              class="dress-code-photo"
-              loading="lazy"
-              onerror="this.src='https://picsum.photos/seed/womenattire/400/560'"
-            />
-          </div>
-          <p class="dress-code-photo-label">For Her</p>
-        </div>
+        {% endfor %}
       </div>
     </div>
   </article>

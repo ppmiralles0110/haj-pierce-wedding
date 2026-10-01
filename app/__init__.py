@@ -96,7 +96,7 @@ def create_app(config_object: Optional[object] = None) -> Flask:
         Returns:
             Dict with ``wedding_config`` (dict) and ``theme`` (dict).
         """
-        from app.models.wedding_config import WeddingConfig
+        from app.models.wedding_config import WeddingConfig, dress_code_photo_keys
         try:
             config_rows = WeddingConfig.query.all()
             wedding_config = {row.key: row.value for row in config_rows}
@@ -116,6 +116,10 @@ def create_app(config_object: Optional[object] = None) -> Flask:
         return {
             "wedding_config": wedding_config,
             "theme": theme,
+            "dress_code_photos": {
+                group: dress_code_photo_keys(wedding_config, group)
+                for group in ("men", "women")
+            },
             # Convenience shorthand used in many templates
             "current_user_email": session.get("user_email"),
             "is_authenticated": session.get("authenticated", False),

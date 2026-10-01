@@ -1,4 +1,5 @@
 # models package — import all models so Flask-Migrate auto-detects them
+from app.models.admin_user import AdminUser
 from app.models.guest import Guest
 from app.models.otp_token import OtpToken
 from app.models.invite_code import InviteCode
@@ -9,6 +10,7 @@ from app.models.guestbook_message import GuestbookMessage
 from app.models.ai_chat_log import AiChatLog
 
 __all__ = [
+    "AdminUser",
     "Guest",
     "OtpToken",
     "InviteCode",

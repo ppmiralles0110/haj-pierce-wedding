@@ -156,28 +156,51 @@ CI runs on every push. Deployment only runs on push to `main`.
 ## Features
 
 ### Guest Experience
-- **OTP authentication** — guests log in via one-time passcode sent to their email
+- **Invite-code authentication** — guests log in with their name, email, and the unique 8-character code from their invitation
 - **RSVP form** — name, email (validated), Philippine phone number, attendance status, and optional parking request
+- **Dress code references** — up to 4 outfit photos each for him and for her on the Details page
 - **AI wedding chat** — powered by Azure OpenAI gpt-4o-mini; answers questions about the event
 - **Photo gallery** — guests can upload and browse photos stored in Azure Blob Storage
 - **Guestbook** — leave a message for the couple, moderated by admins
 
 ### Admin Panel
-After deploying, visit `/admin/` with an email in the `ADMIN_EMAILS` list to access:
+After deploying, visit `/admin/` with an email in the `ADMIN_EMAILS` list — or one granted access from **Admin → Admin Access** — to reach:
 
 | Section | Features |
 |---------|---------|
 | **Dashboard** | Total Guests, Attending, Declined, Pending, Need Parking, Photos, Guestbook, Chat logs |
-| **Guest List** | Full RSVP table with parking column; CSV export |
+| **Guest List** | RSVP table with name, email, status, phone, parking and table columns; "Needs Parking" filter; CSV export |
 | **Login Logs** | Login history with IP address and geolocation (latitude/longitude + reverse-geocoded name) |
-| **Config** | Edit couple names, wedding date, venue, RSVP open/close, AI chat system prompt, wedding hashtag, colour scheme, hero image (file upload), dress code photos (file upload) |
+| **Invites** | Bulk-import a guest list (CSV upload or pasted text) to generate a unique code per person; single-invite form; copy-all and CSV export |
+| **Admin Access** | Grant or revoke admin rights by email — no redeploy needed |
+| **Config** | Edit couple names, wedding date, venue, RSVP open/close, AI chat system prompt, wedding hashtag, colour scheme, hero image (file upload), dress code photos — 4 for him and 4 for her (file upload) |
 | **Photos** | Upload gallery photos; stored to Azure Blob Storage (local: `static/uploads/`) |
 | **Guestbook** | Review and delete messages |
+
+### Bulk Invite Import
+
+To invite 100+ guests without creating codes one at a time, go to **Admin → Invites → Bulk Import Guest List**:
+
+1. Download the CSV template, or prepare your own file with a `name` column and an optional `email` column.
+2. Upload the CSV — or paste one guest per line into the text box (`Name, email@example.com`).
+3. Leave **Skip names that already have a code** ticked to make repeat imports safe.
+4. Every new code is generated, highlighted in the table, and can be copied individually, via **Copy All**, or downloaded with **Export CSV**.
+
+Files without a header row are accepted too: the first column is treated as the name and the second, if present, as the email. Up to 1000 guests can be imported at once.
+
+### Granting Admin Access
+
+Admin rights come from two places:
+
+* `ADMIN_EMAILS` — the comma-separated app setting. These are **owner** admins; they always have access and cannot be revoked from the UI.
+* **Admin → Admin Access** — grant admin rights to any email address. The change takes effect on that person's next page load; they do not need to log out and back in. Owners and granted admins can both grant and revoke, but nobody can revoke their own access.
+
 
 ### Security Highlights
 - All secrets stored in **Azure Key Vault**; injected into App Service via Key Vault references — zero secrets in code or environment variables
 - System-assigned **Managed Identity** — no stored credentials anywhere
-- OTP codes **SHA-256 hashed** before storage; compared with `secrets.compare_digest()`
+- Invite codes are validated server-side and can be deactivated at any time
+- Admin access is re-checked on **every** admin request, so revocation takes effect immediately
 - **Rate limiting** on all authentication endpoints (Flask-Limiter)
 - File uploads validate extension and MIME content type whitelist
 - **HTTPS enforced** at Front Door and App Service level; TLS 1.2 minimum
@@ -190,7 +213,9 @@ After deploying, visit `/admin/` with an email in the `ADMIN_EMAILS` list to acc
 - [ ] Run `flask db upgrade` via SSH or App Service console
 - [ ] Run `python scripts/seed_db.py` to seed default config values
 - [ ] Visit `/admin/config` and fill in all `[EDIT THIS]` values
-- [ ] Upload a hero image and dress code photos via Admin → Config
+- [ ] Upload a hero image and up to 4 dress code photos per group via Admin → Config
+- [ ] Import your guest list via Admin → Invites → Bulk Import to generate everyone's code
+- [ ] Add any co-hosts via Admin → Admin Access
 - [ ] Send a test OTP email to verify SendGrid integration
 - [ ] Test the AI chat widget end-to-end
 - [ ] Set `rsvp_open = true` when ready to accept RSVPs

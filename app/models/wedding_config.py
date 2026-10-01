@@ -7,6 +7,58 @@ from datetime import datetime, timezone
 
 from app.extensions import db
 
+# Number of reference photos the couple can upload per dress-code group.
+DRESS_CODE_PHOTO_SLOTS = 4
+
+# Ordered config keys for each dress-code group's reference photos.
+DRESS_CODE_PHOTO_KEYS: dict[str, list[str]] = {
+    group: [
+        f"dress_code_{group}_photo_{i}"
+        for i in range(1, DRESS_CODE_PHOTO_SLOTS + 1)
+    ]
+    for group in ("men", "women")
+}
+
+# Pre-4-slot keys, still honoured so existing uploads keep rendering in slot 1.
+LEGACY_DRESS_CODE_PHOTO_KEYS: dict[str, str] = {
+    "men": "dress_code_men_photo",
+    "women": "dress_code_women_photo",
+}
+
+# Every config key whose value is an image that may be streamed to guests.
+CONFIG_IMAGE_KEYS: frozenset[str] = frozenset(
+    {"hero_image_url"}
+    | {key for keys in DRESS_CODE_PHOTO_KEYS.values() for key in keys}
+    | set(LEGACY_DRESS_CODE_PHOTO_KEYS.values())
+)
+
+
+def dress_code_photo_keys(config: dict[str, str], group: str) -> list[str]:
+    """
+    Resolve the config keys holding usable reference photos for a group.
+
+    Slot 1 falls back to the legacy single-photo key so galleries uploaded
+    before the four-slot feature keep displaying.
+
+    Args:
+        config: Mapping of config key -> value (e.g. the ``wedding_config``
+            dict injected into templates).
+        group: Either ``"men"`` or ``"women"``.
+
+    Returns:
+        List of config keys that currently hold a non-empty image value,
+        in slot order.
+    """
+    keys: list[str] = []
+    for index, key in enumerate(DRESS_CODE_PHOTO_KEYS.get(group, [])):
+        if config.get(key):
+            keys.append(key)
+        elif index == 0:
+            legacy_key = LEGACY_DRESS_CODE_PHOTO_KEYS.get(group, "")
+            if config.get(legacy_key):
+                keys.append(legacy_key)
+    return keys
+
 
 class WeddingConfig(db.Model):
     """

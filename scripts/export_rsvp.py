@@ -39,8 +39,8 @@ def export_rsvp(output_path: str = "rsvp_export.csv", status: Optional[str] = No
         guests = query.all()
 
         fieldnames = [
-            "name", "email", "rsvp_status", "meal_preference",
-            "plus_one", "plus_one_name", "table_number",
+            "name", "email", "rsvp_status", "phone_number",
+            "parking_required", "table_number",
             "special_requests", "rsvp_submitted_at", "created_at",
         ]
 
@@ -52,9 +52,8 @@ def export_rsvp(output_path: str = "rsvp_export.csv", status: Optional[str] = No
                     "name": g.name or "",
                     "email": g.email,
                     "rsvp_status": g.rsvp_status,
-                    "meal_preference": g.meal_preference or "",
-                    "plus_one": "Yes" if g.plus_one else "No",
-                    "plus_one_name": g.plus_one_name or "",
+                    "phone_number": g.phone_number or "",
+                    "parking_required": "Yes" if g.parking_required else "No",
                     "table_number": g.table_number or "",
                     "special_requests": g.special_requests or "",
                     "rsvp_submitted_at": (

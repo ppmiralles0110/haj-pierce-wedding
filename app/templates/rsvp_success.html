@@ -42,10 +42,10 @@
         <span class="summary-label">Dress Code</span>
         <span class="summary-value">{{ wedding_config.get('dress_code', 'TBD') }}</span>
       </div>
-      {% if guest.plus_one and guest.plus_one_name %}
+      {% if guest.parking_required %}
       <div class="summary-row">
-        <span class="summary-label">+1</span>
-        <span class="summary-value">{{ guest.plus_one_name }}</span>
+        <span class="summary-label">Parking</span>
+        <span class="summary-value">Reserved for you</span>
       </div>
       {% endif %}
     </div>

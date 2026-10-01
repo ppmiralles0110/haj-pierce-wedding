@@ -55,28 +55,6 @@ class Guest(db.Model):
         comment="RSVP status: pending | attending | not_attending",
     )
 
-    # Meal preference — only relevant if attending
-    meal_preference = db.Column(
-        db.Enum("chicken", "fish", "vegetarian", "vegan", name="meal_pref_enum"),
-        nullable=True,
-        comment="Meal preference: chicken | fish | vegetarian | vegan",
-    )
-
-    # Whether the guest is bringing a +1
-    plus_one = db.Column(
-        db.Boolean,
-        nullable=False,
-        default=False,
-        comment="True if guest is bringing a plus-one",
-    )
-
-    # Name of the +1 (optional)
-    plus_one_name = db.Column(
-        db.String(255),
-        nullable=True,
-        comment="Full name of the plus-one guest",
-    )
-
     # Table assignment — set by admin after RSVP closes
     table_number = db.Column(
         db.Integer,
@@ -144,9 +122,6 @@ class Guest(db.Model):
             "name": self.name,
             "email": self.email,
             "rsvp_status": self.rsvp_status,
-            "meal_preference": self.meal_preference,
-            "plus_one": self.plus_one,
-            "plus_one_name": self.plus_one_name,
             "table_number": self.table_number,
             "special_requests": self.special_requests,
             "phone_number": self.phone_number,

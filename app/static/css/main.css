@@ -323,12 +323,25 @@ body.has-hero .navbar:not(.navbar--scrolled) .nav-hamburger span { background: #
 
 /* ===== DRESS CODE PHOTOS ===== */
 .details-card--wide .details-card-body { width: 100%; }
+.dress-code-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  margin-top: var(--space-lg);
+}
+.dress-code-group-label {
+  font-family: var(--font-subheading);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: var(--space-sm);
+}
 .dress-code-photos {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-lg);
-  margin-top: var(--space-lg);
-  max-width: 520px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+  max-width: 720px;
 }
 .dress-code-photo-card { display: flex; flex-direction: column; align-items: center; gap: var(--space-sm); }
 .dress-code-photo-wrap {
@@ -552,6 +565,7 @@ body.has-hero .navbar:not(.navbar--scrolled) .nav-hamburger span { background: #
   .hero-ctas { gap: var(--space-sm); }
   .btn { padding: 12px 24px; }
   .details-card { flex-direction: column; gap: var(--space-md); }
+  .dress-code-photos { grid-template-columns: repeat(2, 1fr); }
   .nav-links { background: rgba(20,0,5,0.98); }
   /* Countdown tighter on mobile */
   .countdown { gap: 20px; }

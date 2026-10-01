@@ -22,9 +22,44 @@
   {% endfor %}
 {% endwith %}
 
-<!-- ── Create invite ── -->
+<!-- ── Bulk import ── -->
 <div class="admin-card" style="margin-bottom:1.5rem;">
-  <h2 class="admin-section-title" style="margin-top:0;">Add New Invite</h2>
+  <h2 class="admin-section-title" style="margin-top:0;">Bulk Import Guest List</h2>
+  <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:16px;">
+    Upload a CSV with a <code>name</code> column (and an optional <code>email</code> column),
+    or paste one guest per line below. A unique code is generated for each person.
+    <a href="{{ url_for('admin.invite_template') }}" style="color:var(--color-primary);">Download CSV template</a>
+  </p>
+
+  <form method="POST" action="{{ url_for('admin.bulk_create_invites') }}" enctype="multipart/form-data">
+    <div style="margin-bottom:16px;">
+      <label class="config-key" for="guest_file">CSV File</label>
+      <input class="form-input" type="file" id="guest_file" name="guest_file" accept=".csv,text/csv,text/plain" />
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <label class="config-key" for="guest_list">…or paste the list</label>
+      <textarea class="form-input" id="guest_list" name="guest_list" rows="6"
+                placeholder="Juan Dela Cruz, juan@example.com&#10;Maria Santos&#10;The Reyes Family"></textarea>
+      <small style="color:var(--color-text-secondary);font-size:12px;margin-top:4px;display:block;">
+        A file upload takes priority over pasted text. Max {{ max_bulk_invites }} guests per import.
+      </small>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <label style="font-size:13px;cursor:pointer;">
+        <input type="checkbox" name="skip_duplicates" value="1" checked />
+        Skip names that already have a code
+      </label>
+    </div>
+
+    <button type="submit" class="btn btn--primary">Generate Codes</button>
+  </form>
+</div>
+
+<!-- ── Create single invite ── -->
+<div class="admin-card" style="margin-bottom:1.5rem;">
+  <h2 class="admin-section-title" style="margin-top:0;">Add a Single Invite</h2>
   <form method="POST" action="{{ url_for('admin.create_invite') }}" class="admin-form-inline">
     <input
       type="text"
@@ -35,20 +70,44 @@
       maxlength="200"
       style="flex:1;min-width:200px;"
     />
+    <input
+      type="email"
+      name="email"
+      class="admin-input"
+      placeholder="Email (optional)"
+      maxlength="255"
+      style="flex:1;min-width:180px;"
+    />
     <button type="submit" class="btn btn--primary">Generate Code</button>
   </form>
 </div>
 
 <!-- ── Invite code table ── -->
 <div class="admin-card">
-  <h2 class="admin-section-title" style="margin-top:0;">All Invite Codes ({{ invites|length }})</h2>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+    <h2 class="admin-section-title" style="margin-top:0;">All Invite Codes ({{ invites|length }})</h2>
+    <div style="display:flex;gap:.5rem;">
+      {% if invites %}
+      <button type="button" class="btn btn--sm btn--outline" onclick="copyAllCodes()">Copy All</button>
+      {% endif %}
+      <a href="{{ url_for('admin.export_invites') }}" class="btn btn--sm btn--outline">Export CSV</a>
+    </div>
+  </div>
+
+  {% if batch_ids %}
+  <p style="font-size:13px;color:var(--color-primary);margin:.5rem 0 0;">
+    {{ batch_ids|length }} code(s) from your latest import are highlighted below.
+  </p>
+  {% endif %}
+
   {% if invites %}
   <div class="admin-table-wrap">
-    <table class="admin-table">
+    <table class="admin-table" id="invite-table">
       <thead>
         <tr>
           <th>Code</th>
           <th>Guest / Label</th>
+          <th>Email</th>
           <th>Status</th>
           <th>Uses</th>
           <th>Created</th>
@@ -57,9 +116,10 @@
       </thead>
       <tbody>
         {% for inv in invites %}
-        <tr>
+        <tr {% if inv.id in batch_ids %}style="background:rgba(200,169,110,0.10);"{% endif %}>
           <td>
-            <span style="font-family:monospace;font-size:1rem;letter-spacing:.2em;font-weight:600;">
+            <span class="invite-code-value"
+                  style="font-family:monospace;font-size:1rem;letter-spacing:.2em;font-weight:600;">
               {{ inv.code }}
             </span>
             <button class="btn btn--xs btn--ghost"
@@ -68,7 +128,8 @@
               Copy
             </button>
           </td>
-          <td>{{ inv.label }}</td>
+          <td class="invite-label-value">{{ inv.label }}</td>
+          <td>{{ inv.email or '—' }}</td>
           <td>
             {% if inv.is_active %}
               <span class="badge badge--green">Active</span>
@@ -95,8 +156,20 @@
     </table>
   </div>
   {% else %}
-    <p style="opacity:.6;">No invite codes yet. Use the form above to generate the first one.</p>
+    <p style="opacity:.6;">No invite codes yet. Use the forms above to generate them.</p>
   {% endif %}
 </div>
+
+<script>
+  function copyAllCodes() {
+    const rows = document.querySelectorAll('#invite-table tbody tr');
+    const lines = Array.from(rows).map(row => {
+      const label = row.querySelector('.invite-label-value')?.textContent.trim() ?? '';
+      const code = row.querySelector('.invite-code-value')?.textContent.trim() ?? '';
+      return label + '\t' + code;
+    });
+    navigator.clipboard.writeText(lines.join('\n'));
+  }
+</script>
 
 {% endblock %}

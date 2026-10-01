@@ -27,12 +27,58 @@ from flask import (
 )
 
 from app.extensions import db, limiter
+from app.models.admin_user import AdminUser
 from app.models.guest import Guest
 from app.models.invite_code import InviteCode
 
 logger = logging.getLogger(__name__)
 
 auth_bp = Blueprint("auth", __name__)
+
+
+# ---------------------------------------------------------------------------
+# Admin access helpers
+# ---------------------------------------------------------------------------
+
+def is_owner_email(email: str) -> bool:
+    """
+    Check whether an email is an *owner* admin from the ADMIN_EMAILS config.
+
+    Owner admins always have access and cannot be revoked from the portal.
+
+    Args:
+        email: Email address to check.
+
+    Returns:
+        True if the email is listed in ADMIN_EMAILS.
+    """
+    if not email:
+        return False
+    admin_emails = [e.lower() for e in current_app.config.get("ADMIN_EMAILS", [])]
+    return email.strip().lower() in admin_emails
+
+
+def is_admin_email(email: str) -> bool:
+    """
+    Check whether an email has admin access, from either source.
+
+    Args:
+        email: Email address to check.
+
+    Returns:
+        True if the email is an owner admin or has an ``admin_users`` grant.
+    """
+    if not email:
+        return False
+    if is_owner_email(email):
+        return True
+    normalised = email.strip().lower()
+    try:
+        return AdminUser.query.filter_by(email=normalised).first() is not None
+    except Exception as exc:
+        # Table may not exist yet (pre-migration) — fall back to owner list only
+        logger.warning("Could not check admin_users table: %s", exc)
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -55,7 +101,11 @@ def admin_required(f: Callable) -> Callable:
         if not session.get("authenticated"):
             flash("Please log in to access this page.", "info")
             return redirect(url_for("auth.login"))
-        if not session.get("is_admin"):
+        # Re-check on every request so grants and revocations take effect
+        # immediately rather than only after the user logs in again.
+        current = is_admin_email(session.get("user_email", ""))
+        session["is_admin"] = current
+        if not current:
             flash("You do not have permission to access this page.", "error")
             return redirect(url_for("main.home"))
         return f(*args, **kwargs)
@@ -120,13 +170,12 @@ def login():
 
         # --- Build session (clear first to prevent fixation) ---
         session.clear()
-        admin_emails = [e.lower() for e in current_app.config.get("ADMIN_EMAILS", [])]
         session["authenticated"]    = True
         session["user_email"]       = email
         session["user_first_name"]  = first_name
         session["user_last_name"]   = last_name
         session["user_full_name"]   = full_name
-        session["is_admin"]         = email.lower() in admin_emails
+        session["is_admin"]         = is_admin_email(email)
         session.permanent = True
 
         # --- Log the login ---

@@ -27,6 +27,7 @@ class InviteCode(db.Model):
     id         = db.Column(db.Integer, primary_key=True)
     code       = db.Column(db.String(8), unique=True, nullable=False, index=True)
     label      = db.Column(db.String(200), nullable=False)   # admin-given name/label
+    email      = db.Column(db.String(255), nullable=True, index=True)  # optional, from bulk import
     is_active  = db.Column(db.Boolean, default=True, nullable=False)
     created_at = db.Column(
         db.DateTime(timezone=True),
@@ -37,3 +38,31 @@ class InviteCode(db.Model):
 
     def __repr__(self) -> str:
         return f"<InviteCode {self.code!r} label={self.label!r} active={self.is_active}>"
+
+
+def generate_unique_code(existing: set[str] | None = None) -> str:
+    """
+    Generate an invite code that collides with neither the database nor
+    codes already generated in the current batch.
+
+    Args:
+        existing: Codes reserved earlier in this batch. Mutated in place with
+            the newly issued code so callers can chain calls cheaply.
+
+    Returns:
+        A unique 8-character invite code.
+
+    Raises:
+        RuntimeError: If no unique code could be found after many attempts.
+    """
+    reserved = existing if existing is not None else set()
+    for _ in range(50):
+        code = generate_invite_code()
+        if code in reserved:
+            continue
+        if InviteCode.query.filter_by(code=code).first():
+            reserved.add(code)
+            continue
+        reserved.add(code)
+        return code
+    raise RuntimeError("Could not generate a unique invite code.")

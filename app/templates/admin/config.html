@@ -144,39 +144,40 @@
     <!-- ── Dress Code Photos ── -->
     <fieldset class="config-fieldset">
       <legend class="config-legend">Dress Code Photos</legend>
+      <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:16px;">
+        Up to 4 reference photos per group. Empty slots fall back to a placeholder image.
+      </p>
+      {% for group, group_label in [('men', 'For Him'), ('women', 'For Her')] %}
+      <h3 class="config-key" style="margin:8px 0 12px;">{{ group_label }}</h3>
       <div class="config-grid">
+        {% for i in range(1, 5) %}
+        {% set key = 'dress_code_' ~ group ~ '_photo_' ~ i %}
+        {% set legacy_key = 'dress_code_' ~ group ~ '_photo' %}
+        {% set current = cfg.get(key, '') or (cfg.get(legacy_key, '') if i == 1 else '') %}
         <div class="config-row">
-          <label class="config-key" for="cfg-dress_code_men_photo">For Him — Photo</label>
-          <input class="form-input" type="file" id="cfg-dress_code_men_photo" name="dress_code_men_photo_file"
+          <label class="config-key" for="cfg-{{ key }}">{{ group_label }} — Photo {{ i }}</label>
+          <input class="form-input" type="file" id="cfg-{{ key }}" name="{{ key }}_file"
                  accept="image/*" />
-          <input type="hidden" name="dress_code_men_photo" value="{{ cfg.get('dress_code_men_photo', '') }}" />
-          {% if cfg.get('dress_code_men_photo') %}
+          <input type="hidden" name="{{ key }}" value="{{ current }}" />
+          {% if current %}
           <small style="color:var(--color-text-secondary);font-size:12px;margin-top:4px;display:block;">
-            Current: <a href="{{ cfg.get('dress_code_men_photo') }}" target="_blank" style="color:var(--color-primary);">view image</a>
+            Current:
+            <a href="{{ url_for('main.serve_config_image', config_key=key) }}" target="_blank"
+               style="color:var(--color-primary);">view image</a>
+            &middot;
+            <label style="cursor:pointer;">
+              <input type="checkbox" name="clear_{{ key }}" value="1" /> remove
+            </label>
           </small>
           {% else %}
           <small style="color:var(--color-text-secondary);font-size:12px;margin-top:4px;display:block;">
-            Leave blank to use default placeholder.
+            Empty — placeholder shown.
           </small>
           {% endif %}
         </div>
-        <div class="config-row">
-          <label class="config-key" for="cfg-dress_code_women_photo">For Her — Photo</label>
-          <input class="form-input" type="file" id="cfg-dress_code_women_photo" name="dress_code_women_photo_file"
-                 accept="image/*" />
-          <input type="hidden" name="dress_code_women_photo" value="{{ cfg.get('dress_code_women_photo', '') }}" />
-          {% if cfg.get('dress_code_women_photo') %}
-          <small style="color:var(--color-text-secondary);font-size:12px;margin-top:4px;display:block;">
-            Current: <a href="{{ cfg.get('dress_code_women_photo') }}" target="_blank" style="color:var(--color-primary);">view image</a>
-          </small>
-          {% else %}
-          <small style="color:var(--color-text-secondary);font-size:12px;margin-top:4px;display:block;">
-            Leave blank to use default placeholder.
-          </small>
-          {% endif %}
-        </div>
-        </div>
+        {% endfor %}
       </div>
+      {% endfor %}
     </fieldset>
 
     <!-- ── Program of Events ── -->

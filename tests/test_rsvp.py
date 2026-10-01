@@ -21,9 +21,7 @@ def test_rsvp_submit_attending(auth_client, app):
             data={
                 "name": "Test Guest",
                 "rsvp_status": "attending",
-                "meal_preference": "chicken",
-                "plus_one": "no",
-                "special_requests": "",
+                "parking_required": "yes",
             },
             follow_redirects=True,
         )
@@ -53,7 +51,6 @@ def test_rsvp_submit_missing_name(auth_client):
         data={
             "name": "",
             "rsvp_status": "attending",
-            "meal_preference": "fish",
         },
         follow_redirects=True,
     )
@@ -61,16 +58,56 @@ def test_rsvp_submit_missing_name(auth_client):
     assert b"name" in resp.data.lower()
 
 
-def test_rsvp_submit_attending_no_meal(auth_client):
-    """POST /rsvp attending without a meal preference should fail validation."""
+def test_rsvp_submit_invalid_phone(auth_client):
+    """POST /rsvp with a non-Philippine mobile number should fail validation."""
     resp = auth_client.post(
         "/rsvp",
         data={
-            "name": "Hungry Guest",
+            "name": "Wrong Number",
             "rsvp_status": "attending",
-            "meal_preference": "",
+            "phone_number": "12345",
         },
         follow_redirects=True,
     )
     assert resp.status_code == 200
-    assert b"meal" in resp.data.lower()
+    assert b"philippine" in resp.data.lower()
+
+
+def test_rsvp_parking_saved_when_attending(auth_client, app):
+    """Parking preference should persist for attending guests."""
+    with patch("app.services.ai_service.generate_rsvp_confirmation", return_value="Welcome!"):
+        auth_client.post(
+            "/rsvp",
+            data={
+                "name": "Parking Guest",
+                "rsvp_status": "attending",
+                "parking_required": "yes",
+            },
+            follow_redirects=True,
+        )
+
+    from app.models.guest import Guest
+    with app.app_context():
+        guest = Guest.query.filter_by(email="guest@test.com").first()
+        assert guest is not None
+        assert guest.parking_required is True
+
+
+def test_rsvp_parking_cleared_when_declining(auth_client, app):
+    """Parking should be forced off when a guest declines."""
+    with patch("app.services.ai_service.generate_rsvp_confirmation", return_value="Thanks"):
+        auth_client.post(
+            "/rsvp",
+            data={
+                "name": "Declining Guest",
+                "rsvp_status": "not_attending",
+                "parking_required": "yes",
+            },
+            follow_redirects=True,
+        )
+
+    from app.models.guest import Guest
+    with app.app_context():
+        guest = Guest.query.filter_by(email="guest@test.com").first()
+        assert guest is not None
+        assert guest.parking_required is False

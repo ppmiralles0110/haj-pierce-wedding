@@ -8,13 +8,15 @@
 <div class="admin-section">
   <div class="filter-tabs">
     <a href="{{ url_for('admin.guests') }}"
-       class="filter-tab {% if not status_filter %}active{% endif %}">All</a>
+       class="filter-tab {% if not status_filter and not parking_filter %}active{% endif %}">All</a>
     <a href="{{ url_for('admin.guests', status='attending') }}"
        class="filter-tab {% if status_filter == 'attending' %}active{% endif %}">Attending</a>
     <a href="{{ url_for('admin.guests', status='not_attending') }}"
        class="filter-tab {% if status_filter == 'not_attending' %}active{% endif %}">Declined</a>
     <a href="{{ url_for('admin.guests', status='pending') }}"
        class="filter-tab {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
+    <a href="{{ url_for('admin.guests', parking='1') }}"
+       class="filter-tab {% if parking_filter %}active{% endif %}">Needs Parking</a>
     <a href="{{ url_for('admin.export_guests') }}" class="admin-btn admin-btn--small">
       Export CSV
     </a>
@@ -30,8 +32,8 @@
           <th>Name</th>
           <th>Email</th>
           <th>Status</th>
-          <th>Meal</th>
-          <th>+1</th>
+          <th>Phone</th>
+          <th>Parking</th>
           <th>Table</th>
           <th>RSVP At</th>
         </tr>
@@ -46,11 +48,15 @@
               {{ g.rsvp_status | replace('_', ' ') | title }}
             </span>
           </td>
-          <td>{{ g.meal_preference | title if g.meal_preference else '—' }}</td>
+          <td>{{ g.phone_number or '—' }}</td>
           <td>
-            {% if g.plus_one %}
-              Yes{% if g.plus_one_name %} ({{ g.plus_one_name }}){% endif %}
-            {% else %}No{% endif %}
+            {% if g.rsvp_status != 'attending' %}
+              —
+            {% elif g.parking_required %}
+              <span class="status-badge status-badge--attending">Yes</span>
+            {% else %}
+              No
+            {% endif %}
           </td>
           <td>{{ g.table_number or '—' }}</td>
           <td>{{ g.rsvp_submitted_at.strftime('%b %d %H:%M') if g.rsvp_submitted_at else '—' }}</td>

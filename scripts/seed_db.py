@@ -62,9 +62,15 @@ DEFAULT_CONFIG: dict[str, str] = {
     "custom_message":  "We can't wait to celebrate with you!",
     "wedding_hashtag": "#PierceAndHaj",
 
-    # ---- Dress Code Photos ----
-    "dress_code_men_photo":   "",                           # URL to men's attire photo
-    "dress_code_women_photo": "",                           # URL to women's attire photo
+    # ---- Dress Code Photos (4 reference photos per group) ----
+    "dress_code_men_photo_1":   "",
+    "dress_code_men_photo_2":   "",
+    "dress_code_men_photo_3":   "",
+    "dress_code_men_photo_4":   "",
+    "dress_code_women_photo_1": "",
+    "dress_code_women_photo_2": "",
+    "dress_code_women_photo_3": "",
+    "dress_code_women_photo_4": "",
 
     # ---- Program of Events (time + label, up to 5 rows) ----
     "program_1_time":  "",  "program_1_label": "Ceremony Begins",

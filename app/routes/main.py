@@ -111,15 +111,20 @@ def download_ics():
 @main_bp.route("/photo/config/<config_key>")
 @login_required
 def serve_config_image(config_key):
-    """Stream a private blob config image (hero, dress-code) via managed identity."""
+    """Serve a config image (hero, dress-code) — streamed from private blob storage."""
     import re
     from flask import abort
-    from app.models.wedding_config import WeddingConfig
-    allowed_keys = {"hero_image_url", "dress_code_men_photo", "dress_code_women_photo"}
-    if config_key not in allowed_keys:
+    from app.models.wedding_config import WeddingConfig, CONFIG_IMAGE_KEYS
+    if config_key not in CONFIG_IMAGE_KEYS:
         abort(404)
     blob_url = WeddingConfig.get(config_key)
-    if not blob_url or "blob.core.windows.net" not in blob_url:
+    if not blob_url:
+        abort(404)
+    if "blob.core.windows.net" not in blob_url:
+        # Local/static upload path — serve it directly. Only relative paths are
+        # followed so an admin-set value can never become an open redirect.
+        if blob_url.startswith("/") and not blob_url.startswith("//"):
+            return redirect(blob_url)
         abort(404)
     try:
         from azure.storage.blob import BlobServiceClient
