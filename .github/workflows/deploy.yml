@@ -19,7 +19,9 @@ jobs:
 
     environment:
       name: production
-      url: https://${{ secrets.AZURE_APP_NAME }}.azurewebsites.net
+      # NOTE: the `secrets` context is not permitted in `environment.url`;
+      # referencing it here silently invalidates the whole workflow file.
+      url: https://wedding-prod-app.azurewebsites.net
 
     steps:
       - name: Checkout code
